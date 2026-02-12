@@ -1,0 +1,1742 @@
+﻿@model DasbordVM
+
+@{
+    ViewData["Title"] = "Dashboard";
+    var today = DateTime.Today;
+    var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+    var firstDayOfLastMonth = firstDayOfMonth.AddMonths(-1);
+    var lastDayOfLastMonth = firstDayOfMonth.AddDays(-1);
+    var nextWeek = today.AddDays(7);
+    var yesterday = today.AddDays(-1);
+}
+
+<div class="row g-3 mb-3">
+    <!-- Left Column: Stats and Overview -->
+    <div class="col-xxl-6 col-xl-12">
+        <div class="row g-3">
+            <!-- Welcome Card -->
+            <div class="col-12">
+                <div class="card bg-transparent-50 overflow-hidden">
+                    <div class="card-header position-relative">
+                        <div class="bg-holder d-none d-md-block bg-card z-index-1" 
+                             style="background-image:url(/assets/img/illustrations/movie-bg.png);background-size:230px;background-position:right bottom;">
+                        </div>
+                        
+                        <div class="position-relative z-index-2">
+                            <div>
+                                <h3 class="text-primary mb-1">Welcome Back, Admin!</h3>
+                                <p>Here's what's happening with your cinema today</p>
+                            </div>
+                            <div class="d-flex py-3">
+                                <div class="pe-3">
+                                    <p class="text-600 fs--1 fw-medium">Total Movies</p>
+                                    <h4 class="text-800 mb-0">@ViewBag.TotalMovies</h4>
+                                </div>
+                                <div class="ps-3">
+                                    <p class="text-600 fs--1">Total Revenue</p>
+                                    <h4 class="text-800 mb-0">$@(ViewBag.TotalRevenue?.ToString("N2") ?? "0.00")</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="mb-0 list-unstyled">
+                            <li class="alert mb-0 rounded-0 py-3 px-4 alert-warning border-x-0 border-top-0">
+                                <div class="row flex-between-center">
+                                    <div class="col">
+                                        <div class="d-flex">
+                                            <div class="fas fa-circle mt-1 fs--2"></div>
+                                            <p class="fs--1 ps-2 mb-0">
+                                                <strong>@ViewBag.InactiveMovies movies</strong> are currently inactive
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto d-flex align-items-center">
+                                        <a class="alert-link fs--1 fw-medium" href="@Url.Action("Index", "Movie", new { area = "Admin", status = false })">
+                                            View movies<i class="fas fa-chevron-right ms-1 fs--2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="alert mb-0 rounded-0 py-3 px-4 greetings-item border-top border-x-0">
+                                <div class="row flex-between-center">
+                                    <div class="col">
+                                        <div class="d-flex">
+                                            <div class="fas fa-circle mt-1 fs--2 text-primary"></div>
+                                            <p class="fs--1 ps-2 mb-0">
+                                                <strong>@ViewBag.UpcomingMovies movies</strong> will be released soon
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto d-flex align-items-center">
+                                        <a class="alert-link fs--1 fw-medium" href="@Url.Action("Index", "Movie", new { area = "Admin" })">
+                                            View upcoming<i class="fas fa-chevron-right ms-1 fs--2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="alert mb-0 rounded-0 py-3 px-4 greetings-item border-top border-0">
+                                <div class="row flex-between-center">
+                                    <div class="col">
+                                        <div class="d-flex">
+                                            <div class="fas fa-circle mt-1 fs--2 text-primary"></div>
+                                            <p class="fs--1 ps-2 mb-0">
+                                                <strong>@ViewBag.TotalActors actors</strong> in the database
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto d-flex align-items-center">
+                                        <a class="alert-link fs--1 fw-medium" href="@Url.Action("Index", "Actor", new { area = "Admin" })">
+                                            View actors<i class="fas fa-chevron-right ms-1 fs--2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Stats Cards -->
+            <div class="col-lg-12">
+                <div class="row g-3">
+                    <!-- Weekly Revenue -->
+                    <div class="col-md-6">
+                        <div class="card h-md-100">
+                            <div class="card-header pb-0">
+                                <h6 class="mb-0 mt-2 d-flex align-items-center">Weekly Revenue</h6>
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-end">
+                                <div class="row">
+                                    <div class="col">
+                                        @{
+                                            var weeklyRevenue = ViewBag.TotalRevenue > 0 ? ViewBag.TotalRevenue / 4 : 0;
+                                        }
+                                        <p class="font-sans-serif lh-1 mb-1 fs-2">$@weeklyRevenue.ToString("N0")</p>
+                                        <span class="badge badge-soft-success rounded-pill fs--2">+3.5%</span>
+                                    </div>
+                                    <div class="col-auto ps-0">
+                                        <div class="echart-bar-weekly-sales h-100" style="width: 100px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Distribution -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header pb-0">
+                                <h6 class="mb-0 mt-2 d-flex align-items-center">Category Distribution</h6>
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-end">
+                                <div class="row align-items-end">
+                                    <div class="col">
+                                        @{
+                                            var topCategory = Model.Categories?
+                                                .Select(c => new
+                                                {
+                                                    Category = c,
+                                                    Count = Model.Movies?.Count(m => m.CategoryId == c.Id) ?? 0
+                                                })
+                                                .Where(x => x.Count > 0)
+                                                .OrderByDescending(x => x.Count)
+                                                .FirstOrDefault();
+
+                                            var topCategoryPercent = ViewBag.TotalMovies > 0 && topCategory != null ?
+                                                (topCategory.Count / (decimal)ViewBag.TotalMovies * 100) : 0;
+                                        }
+                                        <p class="font-sans-serif lh-1 mb-1 fs-2">
+                                            @(topCategory?.Count ?? 0)
+                                        </p>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge badge-soft-success rounded-pill fs--2">
+                                                @topCategoryPercent.ToString("F1")%
+                                            </span>
+                                            <span class="ms-2 fs--2 text-500">of total movies</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto ps-0">
+                                        <canvas class="my-n5" id="categoryDistributionDoughnut" width="112" height="112"></canvas>
+                                        <p class="mb-0 text-center fs--2 mt-4 text-500">
+                                            Top: <span class="text-800">@(topCategory?.Category?.Name ?? "None")</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cinema Distribution -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="row h-100 justify-content-between g-0">
+                                    <div class="col-5 col-sm-6 col-xxl pe-2">
+                                        <h6 class="mt-1">Cinema Distribution</h6>
+                                        <div class="fs--2 mt-3" id="cinemaDistributionList">
+                                            @{
+                                                var colors = new[] { "primary", "info", "warning", "success", "danger" };
+                                                int colorIndex = 0;
+                                            }
+                                            @if (Model.Cinemas != null && Model.Cinemas.Any())
+                                            {
+                                                @foreach (var cinema in Model.Cinemas)
+                                                {
+                                                    var movieCount = Model.Movies?.Count(m => m.CinemaId == cinema.Id) ?? 0;
+                                                    var percentage = ViewBag.TotalMovies > 0 ?
+                                                        (movieCount / (decimal)ViewBag.TotalMovies * 100) : 0;
+                                                    var colorClass = colors[colorIndex % colors.Length];
+                                                    colorIndex++;
+
+                                                    <div class="d-flex flex-between-center mb-1">
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="dot bg-@colorClass"></span>
+                                                            <span class="fw-semi-bold">@cinema.Name</span>
+                                                        </div>
+                                                        <div class="d-xxl-none">@movieCount movies (@percentage.ToString("F0")%)</div>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center text-muted py-3">
+                                                    No cinemas found
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-auto position-relative">
+                                        <div class="echart-cinema-distribution" style="width: 150px; height: 150px;"></div>
+                                        <div class="position-absolute top-50 start-50 translate-middle text-dark fs-2">
+                                            @ViewBag.TotalCinemas
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Tickets -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header pb-0">
+                                <h6 class="mb-0 mt-2 d-flex align-items-center">Total Tickets</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-end">
+                                    <div class="col">
+                                        @{
+                                            var totalTickets = ViewBag.TotalRevenue > 0 ? (int)(ViewBag.TotalRevenue / 10) : 0;
+                                        }
+                                        <p class="font-sans-serif lh-1 mb-1 fs-2">@totalTickets</p>
+                                        <div class="badge badge-soft-primary rounded-pill fs--2">
+                                            <span class="fas fa-caret-up me-1"></span>13.6%
+                                        </div>
+                                    </div>
+                                    <div class="col-auto ps-0">
+                                        <div class="total-order-ecommerce" style="width: 100px; height: 50px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Detailed Stats and Chart -->
+    <div class="col-xxl-6 col-xl-12">
+        <!-- Statistics Grid -->
+        <div class="card py-3 mb-3">
+            <div class="card-body py-3">
+                <div class="row g-0">
+                    <!-- Active Movies -->
+                    <div class="col-6 col-md-4 border-200 border-bottom border-end pb-4">
+                        <h6 class="pb-1 text-700">Active Movies</h6>
+                        <p class="font-sans-serif lh-1 mb-1 fs-2">@ViewBag.ActiveMovies</p>
+                        <div class="d-flex align-items-center">
+                            <h6 class="fs--1 text-500 mb-0">Yesterday: @ViewBag.ActiveMoviesYesterday</h6>
+                            @{
+                                var activeMoviesChange = ViewBag.ActiveMoviesYesterday > 0 ?
+                                    ((ViewBag.ActiveMovies - ViewBag.ActiveMoviesYesterday) / (decimal)ViewBag.ActiveMoviesYesterday * 100) : 0;
+                            }
+                            <h6 class="fs--2 ps-3 mb-0 @(activeMoviesChange >= 0 ? "text-primary" : "text-danger")">
+                                <span class="me-1 fas fa-caret-@(activeMoviesChange >= 0 ? "up" : "down")"></span>
+                                @Math.Abs(activeMoviesChange).ToString("F1")%
+                            </h6>
+                        </div>
+                    </div>
+
+                    <!-- Total Categories -->
+                    <div class="col-6 col-md-4 border-200 border-md-200 border-bottom border-md-end pb-4 ps-3">
+                        <h6 class="pb-1 text-700">Total Categories</h6>
+                        <p class="font-sans-serif lh-1 mb-1 fs-2">@ViewBag.TotalCategories</p>
+                        <div class="d-flex align-items-center">
+                            <h6 class="fs--1 text-500 mb-0">Active: @ViewBag.ActiveCategories</h6>
+                            @{
+                                var activeCategoryPercent = ViewBag.TotalCategories > 0 ?
+                                    (ViewBag.ActiveCategories / (decimal)ViewBag.TotalCategories * 100) : 0;
+                            }
+                            <h6 class="fs--2 ps-3 mb-0 text-warning">
+                                <span class="me-1 fas fa-caret-up"></span>
+                                @activeCategoryPercent.ToString("F1")%
+                            </h6>
+                        </div>
+                    </div>
+
+                    <!-- Average Price -->
+                    <div class="col-6 col-md-4 border-200 border-bottom border-end border-md-end-0 pb-4 pt-4 pt-md-0 ps-md-3">
+                        <h6 class="pb-1 text-700">Average Price</h6>
+                        <p class="font-sans-serif lh-1 mb-1 fs-2">$@(ViewBag.AveragePrice?.ToString("F2") ?? "0.00")</p>
+                        <div class="d-flex align-items-center">
+                            <h6 class="fs--1 text-500 mb-0">Highest: $@(ViewBag.HighestPrice?.ToString("F2") ?? "0.00")</h6>
+                            @{
+                                var priceChange = ViewBag.HighestPrice > 0 ?
+                                    ((ViewBag.AveragePrice / ViewBag.HighestPrice) * 100) : 0;
+                            }
+                            <h6 class="fs--2 ps-3 mb-0 text-success">
+                                <span class="me-1 fas fa-caret-up"></span>
+                                @priceChange.ToString("F1")%
+                            </h6>
+                        </div>
+                    </div>
+
+                    <!-- This Month Revenue -->
+                    <div class="col-6 col-md-4 border-200 border-md-200 border-bottom border-md-bottom-0 border-md-end pt-4 pb-md-0 ps-3 ps-md-0">
+                        <h6 class="pb-1 text-700">This Month Revenue</h6>
+                        <p class="font-sans-serif lh-1 mb-1 fs-2">$@(ViewBag.ThisMonthRevenue?.ToString("N2") ?? "0.00")</p>
+                        <div class="d-flex align-items-center">
+                            <h6 class="fs--1 text-500 mb-0">Last Month: $@(ViewBag.LastMonthRevenue?.ToString("N2") ?? "0.00")</h6>
+                            @{
+                                var revenueChange = ViewBag.LastMonthRevenue > 0 ?
+                                    ((ViewBag.ThisMonthRevenue - ViewBag.LastMonthRevenue) / ViewBag.LastMonthRevenue * 100) : 0;
+                            }
+                            <h6 class="fs--2 ps-3 mb-0 @(revenueChange >= 0 ? "text-danger" : "text-success")">
+                                <span class="me-1 fas fa-caret-@(revenueChange >= 0 ? "up" : "down")"></span>
+                                @Math.Abs(revenueChange).ToString("F1")%
+                            </h6>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Movies -->
+                    <div class="col-6 col-md-4 border-200 border-md-bottom-0 border-end pt-4 pb-md-0 ps-md-3">
+                        <h6 class="pb-1 text-700">Upcoming Movies</h6>
+                        <p class="font-sans-serif lh-1 mb-1 fs-2">@ViewBag.UpcomingMovies</p>
+                        <div class="d-flex align-items-center">
+                            <h6 class="fs--1 text-500 mb-0">Next 7 days: @ViewBag.NextWeekMovies</h6>
+                            @{
+                                var upcomingChange = ViewBag.NextWeekMovies > 0 ?
+                                    ((ViewBag.UpcomingMovies / (decimal)ViewBag.NextWeekMovies) * 100) : 0;
+                            }
+                            <h6 class="fs--2 ps-3 mb-0 text-success">
+                                <span class="me-1 fas fa-caret-up"></span>
+                                @upcomingChange.ToString("F1")%
+                            </h6>
+                        </div>
+                    </div>
+
+                    <!-- Actors per Movie -->
+                    <div class="col-6 col-md-4 pb-0 pt-4 ps-3">
+                        <h6 class="pb-1 text-700">Actors per Movie</h6>
+                        <p class="font-sans-serif lh-1 mb-1 fs-2">@(ViewBag.AvgActorsPerMovie?.ToString("F1") ?? "0.0")</p>
+                        <div class="d-flex align-items-center">
+                            <h6 class="fs--1 text-500 mb-0">Total Actors: @ViewBag.TotalActors</h6>
+                            @{
+                                var actorRatio = ViewBag.TotalMovies > 0 ?
+                                    (ViewBag.TotalActors / (decimal)ViewBag.TotalMovies * 100) : 0;
+                            }
+                            <h6 class="fs--2 ps-3 mb-0 text-info">
+                                <span class="me-1 fas fa-caret-up"></span>
+                                @actorRatio.ToString("F1")%
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Trend Chart -->
+        <div class="card">
+            <div class="card-header">
+                <div class="row flex-between-center g-0">
+                    <div class="col-auto">
+                        <h6 class="mb-0">Movie Revenue Trend</h6>
+                    </div>
+                    <div class="col-auto d-flex">
+                        <div class="form-check mb-0 d-flex">
+                            <input class="form-check-input form-check-input-primary" id="thisMonth" type="checkbox" checked="checked" />
+                            <label class="form-check-label ps-2 fs--2 text-600 mb-0" for="thisMonth">This Month</label>
+                        </div>
+                        <div class="form-check mb-0 d-flex ps-0 ps-md-3">
+                            <input class="form-check-input ms-2 form-check-input-warning opacity-75" id="lastMonth" type="checkbox" checked="checked" />
+                            <label class="form-check-label ps-2 fs--2 text-600 mb-0" for="lastMonth">Last Month</label>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="dropdown font-sans-serif btn-reveal-trigger">
+                            <button class="btn btn-link text-600 btn-sm dropdown-toggle dropdown-caret-none btn-reveal" type="button" id="dropdown-movie-revenue" data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
+                                <span class="fas fa-ellipsis-h fs--2"></span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end border py-2" aria-labelledby="dropdown-movie-revenue">
+                                <a class="dropdown-item" href="@Url.Action("Index", "Movie", new { area = "Admin" })">View</a>
+                                <a class="dropdown-item" href="#!">Export</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="#!">Remove</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body pe-xxl-0">
+                <div class="echart-line-movie-revenue" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Movies Table -->
+<div class="row g-3 mb-3">
+    <div class="col-xxl-9 col-md-12">
+        <div class="card z-index-1" id="recentMoviesTable">
+            <div class="card-header">
+                <div class="row flex-between-center">
+                    <div class="col-6 col-sm-auto d-flex align-items-center pe-0">
+                        <h5 class="fs-0 mb-0 text-nowrap py-2 py-xl-0">Recent Movies</h5>
+                    </div>
+                    <div class="col-6 col-sm-auto ms-auto text-end ps-0">
+                        <div class="d-none" id="table-movies-actions">
+                            <div class="d-flex">
+                                <select class="form-select form-select-sm" aria-label="Bulk actions">
+                                    <option selected="">Bulk actions</option>
+                                    <option value="Activate">Activate</option>
+                                    <option value="Deactivate">Deactivate</option>
+                                    <option value="Delete">Delete</option>
+                                </select>
+                                <button class="btn btn-falcon-default btn-sm ms-2" type="button">Apply</button>
+                            </div>
+                        </div>
+                        <div id="table-movies-replace-element">
+                            <button class="btn btn-falcon-default btn-sm" type="button" onclick="location.href='@Url.Action("Create", "Movie", new { area = "Admin" })'">
+                                <span class="fas fa-plus" data-fa-transform="shrink-3 down-2"></span>
+                                <span class="d-none d-sm-inline-block ms-1">New Movie</span>
+                            </button>
+                            <button class="btn btn-falcon-default btn-sm mx-2" type="button" onclick="location.href='@Url.Action("Index", "Movie", new { area = "Admin" })'">
+                                <span class="fas fa-filter" data-fa-transform="shrink-3 down-2"></span>
+                                <span class="d-none d-sm-inline-block ms-1">Filter</span>
+                            </button>
+                            <button class="btn btn-falcon-default btn-sm" type="button">
+                                <span class="fas fa-external-link-alt" data-fa-transform="shrink-3 down-2"></span>
+                                <span class="d-none d-sm-inline-block ms-1">Export</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body px-0 py-0">
+                <div class="table-responsive scrollbar">
+                    <table class="table table-sm fs--1 mb-0 overflow-hidden">
+                        <thead class="bg-200 text-900">
+                            <tr>
+                                <th class="white-space-nowrap">
+                                    <div class="form-check mb-0 d-flex align-items-center">
+                                        <input class="form-check-input" id="checkbox-bulk-movies-select" type="checkbox" />
+                                    </div>
+                                </th>
+                                <th class="sort pe-1 align-middle white-space-nowrap" data-sort="name">Movie Name</th>
+                                <th class="sort pe-1 align-middle white-space-nowrap" data-sort="category">Category</th>
+                                <th class="sort pe-1 align-middle white-space-nowrap" data-sort="cinema">Cinema</th>
+                                <th class="sort pe-1 align-middle white-space-nowrap text-center" data-sort="price">Price</th>
+                                <th class="sort pe-1 align-middle white-space-nowrap text-center" data-sort="status">Status</th>
+                                <th class="sort pe-1 align-middle white-space-nowrap text-center" data-sort="date">Release Date</th>
+                                <th class="no-sort pe-1 align-middle data-table-row-action"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="list" id="table-movies-body">
+                            @if (Model.Movies != null && Model.Movies.Any())
+                            {
+                                @foreach (var movie in Model.Movies.OrderByDescending(m => m.Date).Take(10))
+                                {
+                                    <tr class="btn-reveal-trigger" id="movie-row-@movie.Id">
+                                        <td class="align-middle" style="width: 28px;">
+                                            <div class="form-check mb-0">
+                                                <input class="form-check-input" type="checkbox" data-bulk-select-row />
+                                            </div>
+                                        </td>
+                                        <th class="align-middle white-space-nowrap name">
+                                            <a href="@Url.Action("Details", "Movie", new { area = "Admin", id = movie.Id })">@movie.Name</a>
+                                        </th>
+                                        <td class="align-middle white-space-nowrap category">
+                                            @movie.Category?.Name
+                                        </td>
+                                        <td class="align-middle white-space-nowrap cinema">
+                                            @movie.Cinema?.Name
+                                        </td>
+                                        <td class="align-middle text-center fs-0 white-space-nowrap price">
+                                            $@movie.Price.ToString("F2")
+                                        </td>
+                                        <td class="align-middle text-center fs-0 white-space-nowrap status">
+                                            <span class="badge badge rounded-pill @(movie.Status ? "badge-soft-success" : "badge-soft-warning")">
+                                                @(movie.Status ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                        <td class="align-middle text-center white-space-nowrap date">
+                                            @movie.Date.ToString("MMM dd, yyyy")
+                                        </td>
+                                        <td class="align-middle white-space-nowrap text-end">
+                                            <div class="dropstart font-sans-serif position-static d-inline-block">
+                                                <button class="btn btn-link text-600 btn-sm dropdown-toggle btn-reveal float-end"
+                                                        type="button" data-bs-toggle="dropdown">
+                                                    <span class="fas fa-ellipsis-h fs--1"></span>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end border py-2">
+                                                    <a class="dropdown-item" href="@Url.Action("Details", "Movie", new { area = "Admin", id = movie.Id })">
+                                                        <i class="fas fa-eye me-2"></i>View
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("Edit", "Movie", new { area = "Admin", id = movie.Id })">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a>
+                                                    
+                                                    @* <a class="dropdown-item delete-movie-btn" 
+                                                       href="@Url.Action("Delete", "Movie", new { area = "Admin", id = movie.Id })"
+                                                       data-name="@movie.Name">
+                                                        <i class="fas fa-trash me-2 text-danger"></i><span class="text-danger">Delete</span>
+                                                    </a> *@
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="text-muted">No movies found</div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <p class="mb-0 fs--1">
+                            <span class="d-none d-sm-inline-block me-2">Showing 1-10 of @Model.Movies?.Count()</span>
+                        </p>
+                    </div>
+                    <div class="col-auto d-flex">
+                        <button class="btn btn-sm btn-primary" type="button">
+                            <span>Previous</span>
+                        </button>
+                        <button class="btn btn-sm btn-primary px-4 ms-2" type="button">
+                            <span>Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Categories Chart -->
+    <div class="col-xxl-3 col-md-6 col-lg-5 order-xxl-1">
+        <div class="card h-100">
+            <div class="card-header bg-light py-2 d-flex flex-between-center">
+                <h6 class="mb-0">Top Categories</h6>
+                <div class="d-flex">
+                    <a class="btn btn-link btn-sm me-2" href="@Url.Action("Index", "Category", new { area = "Admin" })">View All</a>
+                    <div class="dropdown font-sans-serif btn-reveal-trigger">
+                        <button class="btn btn-link text-600 btn-sm dropdown-toggle dropdown-caret-none btn-reveal" type="button" id="dropdown-top-categories" data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
+                            <span class="fas fa-ellipsis-h fs--2"></span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end border py-2" aria-labelledby="dropdown-top-categories">
+                            <a class="dropdown-item" href="@Url.Action("Index", "Category", new { area = "Admin" })">View</a>
+                            <a class="dropdown-item" href="#!">Export</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="#!">Remove</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body d-flex h-100 flex-column justify-content-end">
+                <div class="echart-bar-top-categories" style="height: 250px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row: More Charts and Lists -->
+<div class="row g-3 mb-3">
+    <!-- Revenue by Cinema -->
+    <div class="col-xxl-4 col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-light">
+                <div class="row justify-content-between">
+                    <div class="col-auto">
+                        <h6>Revenue by Cinema</h6>
+                        <div class="d-flex align-items-center">
+                            <h4 class="text-primary mb-0">$@(ViewBag.TotalRevenue?.ToString("N2") ?? "0.00")</h4>
+                            <span class="badge rounded-pill ms-3 badge-soft-primary">
+                                <span class="fas fa-caret-up"></span> 3.5%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select form-select-sm pe-4" id="select-cinema-month">
+                            <option value="0">All Cinemas</option>
+                            @if (Model.Cinemas != null)
+                            {
+                                @foreach (var cinema in Model.Cinemas)
+                                {
+                                    <option value="@cinema.Id">@cinema.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="echart-line-cinema-revenue h-100" style="height: 200px;"></div>
+            </div>
+            <div class="card-footer border-top py-2">
+                <div class="row align-items-center gx-0">
+                    <div class="col text-end">
+                        <a class="btn btn-link btn-sm px-0 fw-medium" href="@Url.Action("Index", "Cinema", new { area = "Admin" })">
+                            View Cinemas <span class="fas fa-chevron-right fs--2"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movie Status Distribution -->
+    <div class="col-xxl-4 col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-light py-2">
+                <div class="d-flex flex-between-center">
+                    <h6 class="mb-0">Movie Status Distribution</h6>
+                    <a class="btn btn-link btn-sm px-0" href="@Url.Action("Index", "Movie", new { area = "Admin" })">
+                        View Details<span class="fas fa-chevron-right ms-1 fs--2"></span>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body px-0 pt-4 pb-0">
+                <table class="table table-borderless font-sans-serif fw-medium fs--1">
+                    <tbody>
+                        <tr>
+                            <td class="pb-2 pt-0">
+                                <span class="fas fa-circle fs--2 me-1 text-success"></span>Active Movies
+                            </td>
+                            <td class="pb-2 pt-0 text-end">@ViewBag.ActiveMovies</td>
+                            <td class="pb-2 pt-0 text-end">
+                                @{
+                                    var activeMoviesChangePercent = ViewBag.ActiveMoviesYesterday > 0 ?
+                                        ((ViewBag.ActiveMovies - ViewBag.ActiveMoviesYesterday) / (decimal)ViewBag.ActiveMoviesYesterday * 100) : 0;
+                                }
+                                <span class="me-1 fas fa-caret-@(activeMoviesChangePercent >= 0 ? "up" : "down") text-@(activeMoviesChangePercent >= 0 ? "success" : "danger")"></span>
+                                @Math.Abs(activeMoviesChangePercent).ToString("F1")%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-2 pt-0">
+                                <span class="fas fa-circle fs--2 me-1 text-warning"></span>Inactive Movies
+                            </td>
+                            <td class="pb-2 pt-0 text-end">@ViewBag.InactiveMovies</td>
+                            <td class="pb-2 pt-0 text-end">
+                                <span class="me-1 fas fa-caret-down text-danger"></span>0%
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="echart-pie-movie-status h-100 px-md-2 mt-md-5" style="height: 150px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Actors -->
+    <div class="col-xxl-4 col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-light py-2 d-flex flex-between-center">
+                <h6 class="mb-0">Popular Actors</h6>
+                <div class="d-flex">
+                    <a class="btn btn-link btn-sm me-2" href="@Url.Action("Index", "Actor", new { area = "Admin" })">View All</a>
+                    <div class="dropdown font-sans-serif btn-reveal-trigger">
+                        <button class="btn btn-link text-600 btn-sm dropdown-toggle dropdown-caret-none btn-reveal" type="button" id="dropdown-popular-actors" data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true" aria-expanded="false">
+                            <span class="fas fa-ellipsis-h fs--2"></span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end border py-2" aria-labelledby="dropdown-popular-actors">
+                            <a class="dropdown-item" href="@Url.Action("Index", "Actor", new { area = "Admin" })">View</a>
+                            <a class="dropdown-item" href="#!">Export</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="#!">Remove</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless fs--1 mb-0" id="popularActorsTable">
+                        <thead class="bg-100">
+                            <tr>
+                                <th class="text-900">Actor</th>
+                                <th class="text-900 text-end">Movies</th>
+                                <th class="text-900 text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Actors != null && Model.Actors.Any())
+                            {
+                                @foreach (var actor in Model.Actors.Take(5))
+                                {
+                                    var movieCount = Model.Movies?.Count(m => m.ActorsMovies != null && 
+                                                                              m.ActorsMovies.Any(am => am.ActorId == actor.Id)) ?? 0;
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(actor.Img))
+                                                {
+                                                    <img src="@Url.Content("~/Admin/Imgs/ActorsImg/" + actor.Img)" 
+                                                         class="rounded-circle me-2" width="30" height="30" alt="@actor.Name" 
+                                                         onerror="this.src='https://via.placeholder.com/30'" />
+                                                }
+                                                <div>
+                                                    <h6 class="mb-0 fs--1">@actor.Name</h6>
+                                                    <p class="mb-0 text-500 fs--2">
+                                                        @(!string.IsNullOrEmpty(actor.Bio) && actor.Bio.Length > 50 ? 
+                                                          actor.Bio.Substring(0, 50) + "..." : actor.Bio)
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">@movieCount</td>
+                                        <td class="text-end">
+                                            <span class="badge badge-soft-success">Active</span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-3">
+                                        <div class="text-muted">No actors data</div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert Library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts with real data
+            initializeCategoryDoughnutChart();
+            initializeCinemaDistributionChart();
+            initializeRevenueChart();
+            initializeTopCategoriesChart();
+            initializeMovieStatusChart();
+            
+            // Add event listeners for cinema dropdown
+            document.getElementById('select-cinema-month').addEventListener('change', function() {
+                updateCinemaRevenueChart(this.value);
+            });
+            
+            // Initialize SweetAlert for movie deletion
+            initializeMovieDeletion();
+        });
+
+        // Function to initialize SweetAlert for movie deletion
+        function initializeMovieDeletion() {
+            document.querySelectorAll('.delete-movie-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault(); // منع الانتقال المباشر
+                    
+                    const deleteUrl = this.getAttribute('href'); // الرابط الحقيقي للحذف
+                    const movieName = this.getAttribute('data-name');
+                    
+                    Swal.fire({
+                        title: 'Delete Movie',
+                        html: `<div class="text-start">
+                                 <p>Are you sure you want to delete this movie?</p>
+                                 <div class="alert alert-danger mt-2 mb-3">
+                                     <strong>${movieName}</strong>
+                                 </div>
+                                 <p class="text-danger"><small>This action cannot be undone</small></p>
+                               </div>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, delete it',
+                        cancelButtonText: '<i class="fas fa-times me-1"></i> Cancel',
+                        reverseButtons: true,
+                        customClass: {
+                            confirmButton: 'btn btn-danger',
+                            cancelButton: 'btn btn-secondary'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // الانتقال إلى رابط الحذف الحقيقي
+                            window.location.href = deleteUrl;
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Chart initialization functions with REAL DATA
+        function initializeCategoryDoughnutChart() {
+            var ctx = document.getElementById('categoryDistributionDoughnut');
+            if (ctx) {
+                // Get real category data
+                var categoryData = {
+                    labels: [],
+                    data: [],
+                    colors: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#6f42c1', '#20c997', '#fd7e14']
+                };
+                
+                // Collect data from the page (or use ViewBag)
+                @if (Model.Categories != null && Model.Categories.Any())
+                {
+                    var categoriesWithMovies = Model.Categories
+                        .Select(c => new
+                        {
+                            Category = c,
+                            Count = Model.Movies?.Count(m => m.CategoryId == c.Id) ?? 0
+                        })
+                        .Where(x => x.Count > 0)
+                        .ToList();
+                    
+                    @foreach (var item in categoriesWithMovies)
+                    {
+                        <text>
+                        categoryData.labels.push('@Html.Raw(item.Category.Name)');
+                        categoryData.data.push(@item.Count);
+                        </text>
+                    }
+                }
+                
+                // If no data, show empty state
+                if (categoryData.labels.length === 0) {
+                    categoryData.labels = ['No Categories'];
+                    categoryData.data = [1];
+                    categoryData.colors = ['#e9ecef'];
+                }
+                
+                new Chart(ctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryData.labels,
+                        datasets: [{
+                            data: categoryData.data,
+                            backgroundColor: categoryData.colors.slice(0, categoryData.data.length),
+                            borderWidth: 1,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        cutout: '70%',
+                        plugins: {
+                            legend: { 
+                                display: false 
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        var label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        var value = context.parsed;
+                                        var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        var percentage = Math.round((value / total) * 100);
+                                        label += value + ' movie' + (value !== 1 ? 's' : '') + ' (' + percentage + '%)';
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function initializeCinemaDistributionChart() {
+            var cinemaChart = echarts.init(document.querySelector('.echart-cinema-distribution'));
+            
+            // Get real cinema data
+            var cinemaData = [];
+            
+            @if (Model.Cinemas != null && Model.Cinemas.Any())
+            {
+                var cinemasWithMovies = Model.Cinemas
+                    .Select(c => new
+                    {
+                        Cinema = c,
+                        Count = Model.Movies?.Count(m => m.CinemaId == c.Id) ?? 0
+                    })
+                    .Where(x => x.Count > 0)
+                    .ToList();
+                
+                @foreach (var item in cinemasWithMovies)
+                {
+                    <text>
+                    cinemaData.push({
+                        value: @item.Count,
+                        name: '@Html.Raw(item.Cinema.Name)'
+                    });
+                    </text>
+                }
+            }
+            
+            // If no data, show empty state
+            if (cinemaData.length === 0) {
+                cinemaData = [
+                    { value: 1, name: 'No Data' }
+                ];
+            }
+            
+            var colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'];
+            
+            var cinemaOptions = {
+                series: [{
+                    type: 'pie',
+                    radius: ['70%', '90%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: false
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: cinemaData.map((item, index) => ({
+                        value: item.value,
+                        name: item.name,
+                        itemStyle: { 
+                            color: colors[index % colors.length] 
+                        }
+                    }))
+                }],
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        return params.name + ': ' + params.value + ' movie' + (params.value !== 1 ? 's' : '');
+                    }
+                }
+            };
+            
+            cinemaChart.setOption(cinemaOptions);
+        }
+
+        function initializeRevenueChart() {
+            var revenueChart = echarts.init(document.querySelector('.echart-line-movie-revenue'));
+            
+            // This would ideally come from the server via ViewBag
+            // For now, use calculated data or static data
+            var thisMonthData = [3200, 2800, 3500, 4200];
+            var lastMonthData = [3000, 2500, 3200, 3800];
+            
+            var revenueOptions = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        var result = params[0].axisValue + '<br/>';
+                        params.forEach(function(item) {
+                            result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + '"></span>';
+                            result += item.seriesName + ': $' + item.value + '<br/>';
+                        });
+                        return result;
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    axisLabel: {
+                        color: '#6c757d'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        color: '#6c757d',
+                        formatter: '${value}'
+                    }
+                },
+                series: [
+                    {
+                        name: 'This Month',
+                        type: 'line',
+                        data: thisMonthData,
+                        lineStyle: {
+                            color: '#4e73df',
+                            width: 3
+                        },
+                        itemStyle: {
+                            color: '#4e73df'
+                        },
+                        smooth: true
+                    },
+                    {
+                        name: 'Last Month',
+                        type: 'line',
+                        data: lastMonthData,
+                        lineStyle: {
+                            color: '#f6c23e',
+                            width: 2,
+                            opacity: 0.75
+                        },
+                        itemStyle: {
+                            color: '#f6c23e',
+                            opacity: 0.75
+                        },
+                        smooth: true
+                    }
+                ]
+            };
+            
+            revenueChart.setOption(revenueOptions);
+            
+            // Add event listeners for checkboxes
+            document.getElementById('thisMonth').addEventListener('change', function() {
+                revenueChart.dispatchAction({
+                    type: 'legendToggleSelect',
+                    name: 'This Month'
+                });
+            });
+            
+            document.getElementById('lastMonth').addEventListener('change', function() {
+                revenueChart.dispatchAction({
+                    type: 'legendToggleSelect',
+                    name: 'Last Month'
+                });
+            });
+        }
+        
+        function initializeTopCategoriesChart() {
+            var topCategoriesChart = echarts.init(document.querySelector('.echart-bar-top-categories'));
+            
+            // Get real category data
+            var categoriesData = [];
+            var moviesData = [];
+            
+            @if (Model.Categories != null && Model.Categories.Any())
+            {
+                var topCategories = Model.Categories
+                    .Select(c => new
+                    {
+                        Category = c,
+                        Count = Model.Movies?.Count(m => m.CategoryId == c.Id) ?? 0
+                    })
+                    .Where(x => x.Count > 0)
+                    .OrderByDescending(x => x.Count)
+                    .Take(5)
+                    .ToList();
+                
+                @foreach (var item in topCategories)
+                {
+                    <text>
+                    categoriesData.push('@Html.Raw(item.Category.Name)');
+                    moviesData.push(@item.Count);
+                    </text>
+                }
+            }
+            
+            // If no data, show message
+            if (categoriesData.length === 0) {
+                categoriesData = ['No Categories'];
+                moviesData = [0];
+            }
+            
+            var options = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: function(params) {
+                        return params[0].name + ': ' + params[0].value + ' movie' + (params[0].value !== 1 ? 's' : '');
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '10%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        show: true,
+                        color: '#6c757d'
+                    },
+                    splitLine: {
+                        show: false
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: categoriesData,
+                    axisLabel: {
+                        show: true,
+                        color: '#6c757d'
+                    }
+                },
+                series: [{
+                    name: 'Movies Count',
+                    type: 'bar',
+                    data: moviesData,
+                    itemStyle: {
+                        color: function(params) {
+                            var colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'];
+                            return colors[params.dataIndex % colors.length];
+                        },
+                        borderRadius: [0, 5, 5, 0]
+                    },
+                    barWidth: '60%',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        color: '#495057',
+                        formatter: '{c}'
+                    }
+                }]
+            };
+            
+            topCategoriesChart.setOption(options);
+        }
+        
+        function initializeMovieStatusChart() {
+            var movieStatusChart = echarts.init(document.querySelector('.echart-pie-movie-status'));
+            
+            // Get real movie status data
+            var activeMovies = @ViewBag.ActiveMovies;
+            var inactiveMovies = @ViewBag.InactiveMovies;
+            
+            var statusData = [
+                { value: activeMovies, name: 'Active' },
+                { value: inactiveMovies, name: 'Inactive' }
+            ];
+            
+            var options = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        return params.name + ': ' + params.value + ' movie' + (params.value !== 1 ? 's' : '') + 
+                               ' (' + params.percent + '%)';
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['60%', '80%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false
+                    },
+                    emphasis: {
+                        label: {
+                            show: false
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: [
+                        { 
+                            value: activeMovies, 
+                            name: 'Active',
+                            itemStyle: { color: '#1cc88a' }
+                        },
+                        { 
+                            value: inactiveMovies, 
+                            name: 'Inactive',
+                            itemStyle: { color: '#f6c23e' }
+                        }
+                    ]
+                }]
+            };
+            
+            movieStatusChart.setOption(options);
+        }
+
+        function updateCinemaRevenueChart(cinemaId) {
+            console.log('Updating chart for cinema:', cinemaId);
+            // Implement actual data update here
+        }
+    </script>
+}tion Scripts {
+    <!-- SweetAlert Library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts with real data
+            initializeCategoryDoughnutChart();
+            initializeCinemaDistributionChart();
+            initializeRevenueChart();
+            initializeTopCategoriesChart();
+            initializeMovieStatusChart();
+            
+            // Add event listeners for cinema dropdown
+            document.getElementById('select-cinema-month').addEventListener('change', function() {
+                updateCinemaRevenueChart(this.value);
+            });
+            
+            // Initialize SweetAlert for movie deletion
+            initializeMovieDeletion();
+        });
+
+        // Function to initialize SweetAlert for movie deletion
+        function initializeMovieDeletion() {
+            document.querySelectorAll('.delete-movie-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const movieId = this.getAttribute('data-id');
+                    const movieName = this.getAttribute('data-name');
+                    
+                    Swal.fire({
+                        title: 'Delete Movie',
+                        html: `<div class="text-start">
+                                 <p>Are you sure you want to delete this movie?</p>
+                                 <div class="alert alert-danger mt-2 mb-3">
+                                     <strong>${movieName}</strong>
+                                 </div>
+                                 <p class="text-danger"><small>This action cannot be undone</small></p>
+                               </div>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, delete it',
+                        cancelButtonText: '<i class="fas fa-times me-1"></i> Cancel',
+                        reverseButtons: true,
+                        customClass: {
+                            confirmButton: 'btn btn-danger',
+                            cancelButton: 'btn btn-secondary'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            deleteMovie(movieId, movieName);
+                        }
+                    });
+                });
+            });
+        }
+        
+        function deleteMovie(movieId, movieName) {
+            Swal.fire({
+                title: 'Deleting...',
+                text: 'Please wait while we delete the movie',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const formData = new FormData();
+            formData.append('id', movieId);
+            
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            fetch('@Url.Action("Delete", "Movie", new { area = "Admin" })', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then(data => {
+                Swal.close();
+                
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        html: `<div class="text-center">
+                                 <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                                 <p>The movie <strong>${movieName}</strong> has been deleted successfully</p>
+                               </div>`,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        const row = document.getElementById(`movie-row-${movieId}`);
+                        if (row) {
+                            row.remove();
+                            updateMovieCount();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to delete the movie',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while deleting the movie',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                console.error('Error:', error);
+            });
+        }
+        
+        function updateMovieCount() {
+            const movieCountElement = document.querySelector('#recentMoviesTable .fs--1 span');
+            if (movieCountElement) {
+                const currentCount = parseInt('@Model.Movies?.Count()') - 1;
+                const showingText = currentCount > 10 ? 'Showing 1-10' : `Showing 1-${currentCount}`;
+                movieCountElement.textContent = `${showingText} of ${currentCount}`;
+            }
+        }
+
+        // Chart initialization functions with REAL DATA
+        function initializeCategoryDoughnutChart() {
+            var ctx = document.getElementById('categoryDistributionDoughnut');
+            if (ctx) {
+                // Get real category data
+                var categoryData = {
+                    labels: [],
+                    data: [],
+                    colors: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#6f42c1', '#20c997', '#fd7e14']
+                };
+                
+                // Collect data from the page (or use ViewBag)
+                @if (Model.Categories != null && Model.Categories.Any())
+                {
+                    var categoriesWithMovies = Model.Categories
+                        .Select(c => new
+                        {
+                            Category = c,
+                            Count = Model.Movies?.Count(m => m.CategoryId == c.Id) ?? 0
+                        })
+                        .Where(x => x.Count > 0)
+                        .ToList();
+                    
+                    @foreach (var item in categoriesWithMovies)
+                    {
+                        <text>
+                        categoryData.labels.push('@Html.Raw(item.Category.Name)');
+                        categoryData.data.push(@item.Count);
+                        </text>
+                    }
+                }
+                
+                // If no data, show empty state
+                if (categoryData.labels.length === 0) {
+                    categoryData.labels = ['No Categories'];
+                    categoryData.data = [1];
+                    categoryData.colors = ['#e9ecef'];
+                }
+                
+                new Chart(ctx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryData.labels,
+                        datasets: [{
+                            data: categoryData.data,
+                            backgroundColor: categoryData.colors.slice(0, categoryData.data.length),
+                            borderWidth: 1,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        cutout: '70%',
+                        plugins: {
+                            legend: { 
+                                display: false 
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        var label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        var value = context.parsed;
+                                        var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        var percentage = Math.round((value / total) * 100);
+                                        label += value + ' movie' + (value !== 1 ? 's' : '') + ' (' + percentage + '%)';
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function initializeCinemaDistributionChart() {
+            var cinemaChart = echarts.init(document.querySelector('.echart-cinema-distribution'));
+            
+            // Get real cinema data
+            var cinemaData = [];
+            
+            @if (Model.Cinemas != null && Model.Cinemas.Any())
+            {
+                var cinemasWithMovies = Model.Cinemas
+                    .Select(c => new
+                    {
+                        Cinema = c,
+                        Count = Model.Movies?.Count(m => m.CinemaId == c.Id) ?? 0
+                    })
+                    .Where(x => x.Count > 0)
+                    .ToList();
+                
+                @foreach (var item in cinemasWithMovies)
+                {
+                    <text>
+                    cinemaData.push({
+                        value: @item.Count,
+                        name: '@Html.Raw(item.Cinema.Name)'
+                    });
+                    </text>
+                }
+            }
+            
+            // If no data, show empty state
+            if (cinemaData.length === 0) {
+                cinemaData = [
+                    { value: 1, name: 'No Data' }
+                ];
+            }
+            
+            var colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'];
+            
+            var cinemaOptions = {
+                series: [{
+                    type: 'pie',
+                    radius: ['70%', '90%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: false
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: cinemaData.map((item, index) => ({
+                        value: item.value,
+                        name: item.name,
+                        itemStyle: { 
+                            color: colors[index % colors.length] 
+                        }
+                    }))
+                }],
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        return params.name + ': ' + params.value + ' movie' + (params.value !== 1 ? 's' : '');
+                    }
+                }
+            };
+            
+            cinemaChart.setOption(cinemaOptions);
+        }
+
+        function initializeRevenueChart() {
+            var revenueChart = echarts.init(document.querySelector('.echart-line-movie-revenue'));
+            
+            // This would ideally come from the server via ViewBag
+            // For now, use calculated data or static data
+            var thisMonthData = [3200, 2800, 3500, 4200];
+            var lastMonthData = [3000, 2500, 3200, 3800];
+            
+            var revenueOptions = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        var result = params[0].axisValue + '<br/>';
+                        params.forEach(function(item) {
+                            result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + '"></span>';
+                            result += item.seriesName + ': $' + item.value + '<br/>';
+                        });
+                        return result;
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    axisLabel: {
+                        color: '#6c757d'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        color: '#6c757d',
+                        formatter: '${value}'
+                    }
+                },
+                series: [
+                    {
+                        name: 'This Month',
+                        type: 'line',
+                        data: thisMonthData,
+                        lineStyle: {
+                            color: '#4e73df',
+                            width: 3
+                        },
+                        itemStyle: {
+                            color: '#4e73df'
+                        },
+                        smooth: true
+                    },
+                    {
+                        name: 'Last Month',
+                        type: 'line',
+                        data: lastMonthData,
+                        lineStyle: {
+                            color: '#f6c23e',
+                            width: 2,
+                            opacity: 0.75
+                        },
+                        itemStyle: {
+                            color: '#f6c23e',
+                            opacity: 0.75
+                        },
+                        smooth: true
+                    }
+                ]
+            };
+            
+            revenueChart.setOption(revenueOptions);
+            
+            // Add event listeners for checkboxes
+            document.getElementById('thisMonth').addEventListener('change', function() {
+                revenueChart.dispatchAction({
+                    type: 'legendToggleSelect',
+                    name: 'This Month'
+                });
+            });
+            
+            document.getElementById('lastMonth').addEventListener('change', function() {
+                revenueChart.dispatchAction({
+                    type: 'legendToggleSelect',
+                    name: 'Last Month'
+                });
+            });
+        }
+        
+        function initializeTopCategoriesChart() {
+            var topCategoriesChart = echarts.init(document.querySelector('.echart-bar-top-categories'));
+            
+            // Get real category data
+            var categoriesData = [];
+            var moviesData = [];
+            
+            @if (Model.Categories != null && Model.Categories.Any())
+            {
+                var topCategories = Model.Categories
+                    .Select(c => new
+                    {
+                        Category = c,
+                        Count = Model.Movies?.Count(m => m.CategoryId == c.Id) ?? 0
+                    })
+                    .Where(x => x.Count > 0)
+                    .OrderByDescending(x => x.Count)
+                    .Take(5)
+                    .ToList();
+                
+                @foreach (var item in topCategories)
+                {
+                    <text>
+                    categoriesData.push('@Html.Raw(item.Category.Name)');
+                    moviesData.push(@item.Count);
+                    </text>
+                }
+            }
+            
+            // If no data, show message
+            if (categoriesData.length === 0) {
+                categoriesData = ['No Categories'];
+                moviesData = [0];
+            }
+            
+            var options = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: function(params) {
+                        return params[0].name + ': ' + params[0].value + ' movie' + (params[0].value !== 1 ? 's' : '');
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '10%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        show: true,
+                        color: '#6c757d'
+                    },
+                    splitLine: {
+                        show: false
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: categoriesData,
+                    axisLabel: {
+                        show: true,
+                        color: '#6c757d'
+                    }
+                },
+                series: [{
+                    name: 'Movies Count',
+                    type: 'bar',
+                    data: moviesData,
+                    itemStyle: {
+                        color: function(params) {
+                            var colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'];
+                            return colors[params.dataIndex % colors.length];
+                        },
+                        borderRadius: [0, 5, 5, 0]
+                    },
+                    barWidth: '60%',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        color: '#495057',
+                        formatter: '{c}'
+                    }
+                }]
+            };
+            
+            topCategoriesChart.setOption(options);
+        }
+        
+        function initializeMovieStatusChart() {
+            var movieStatusChart = echarts.init(document.querySelector('.echart-pie-movie-status'));
+            
+            // Get real movie status data
+            var activeMovies = @ViewBag.ActiveMovies;
+            var inactiveMovies = @ViewBag.InactiveMovies;
+            
+            var statusData = [
+                { value: activeMovies, name: 'Active' },
+                { value: inactiveMovies, name: 'Inactive' }
+            ];
+            
+            var options = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        return params.name + ': ' + params.value + ' movie' + (params.value !== 1 ? 's' : '') + 
+                               ' (' + params.percent + '%)';
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['60%', '80%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false
+                    },
+                    emphasis: {
+                        label: {
+                            show: false
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: [
+                        { 
+                            value: activeMovies, 
+                            name: 'Active',
+                            itemStyle: { color: '#1cc88a' }
+                        },
+                        { 
+                            value: inactiveMovies, 
+                            name: 'Inactive',
+                            itemStyle: { color: '#f6c23e' }
+                        }
+                    ]
+                }]
+            };
+            
+            movieStatusChart.setOption(options);
+        }
+
+        function updateCinemaRevenueChart(cinemaId) {
+            console.log('Updating chart for cinema:', cinemaId);
+            // Implement actual data update here
+        }
+    </script>
+}

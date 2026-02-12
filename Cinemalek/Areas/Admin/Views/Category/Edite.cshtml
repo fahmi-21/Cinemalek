@@ -1,0 +1,50 @@
+﻿@model Category
+
+<div class="container">
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-6">
+            <h2 class="display-6">Edite Category</h2>
+        </div>
+    </div>
+    <form method="post">
+        <!-- Category Name -->
+        <div class="mb-3">
+            <label for="Name" class="form-label" name="Name">Category Name</label>
+            <input type="text" class="form-control" asp-for="Name"placeholder="Enter category name" >
+            <span class="text-danger" asp-validation-for="Name"></span>
+        </div>
+
+        <!-- Status -->
+        <div class="mb-3">
+            <label for="IsActive" class="form-label" name="Status">Status</label>
+            <select class="form-select" id="IsActive" name="Status">
+                @if (Model.Status)
+                {
+                    <option value="true" selected>Active</option>
+                    <option value="false">Not Active</option>
+                }
+                else
+                {
+                    <option value="true">Active</option>
+                    <option value="false" selected>Not Active</option>
+                }
+            </select>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+            <label for="Description" class="form-label" name="Description">Description</label>
+            <textarea class="form-control"asp-for="Description" rows="5" placeholder="Enter description"></textarea>
+            <span class="text-danger" asp-validation-for="Description"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-6">
+            Save
+        </button>
+    </form>
+</div>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

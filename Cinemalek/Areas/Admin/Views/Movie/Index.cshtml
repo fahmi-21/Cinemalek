@@ -1,0 +1,222 @@
+﻿@model MovieVM
+@using System.Globalization
+
+
+<div class="container">
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-6">
+            <h2 class="display-6">Movies</h2>
+        </div>
+
+        <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+            <a href="/Admin/Movie/Create" class="btn btn-success">
+                + Add Movie
+            </a>
+        </div>
+    </div>
+
+    <!-- filter bar -->
+    <section class="py-3 filter-bar">
+        <div class="container-fluid px-0">
+            <form method="get">
+                <div class="row" style="background-color: rgba(var(--bs-light-rgb) , var(--bs-bg-opacity)) !
+                important;">
+                    <!-- filter by name -->
+                    <div class="col-md-3 mb-2 mb-md-0">
+                        <input type="text" class="form-control" placeholder="Movie Name ..." name="name" value="@Model.Filter.Name">
+                    </div>
+
+                    <!-- filter by price -->                
+                    <!-- max price -->
+                    <div class="col-md-3 mb-2 mb-md-0">
+                        <input type="number" step="0.01" class="form-control" name="minprice" placeholder="Minimum price" value="@Model.Filter.MinPrice">
+
+                    </div>
+
+                    <!-- max price -->
+                    <div class="col-md-3 mb-2 mb-md-0">
+                        <input type="number" step="0.01" class="form-control" name="MaxPrice" placeholder="Maxmum Price" value="@Model.Filter.MaxPrice">
+                    </div>
+
+
+                    <!-- filter by category -->
+                    <div class="col-md-3 mb-2">
+                        <select class="form-select" name="categoryId">
+                            <option value="">All Categories</option>
+                            @foreach (var item in Model.Categories)
+                            {
+                                <option value="@item.Id"
+                                        selected="@(item.Id == Model.Filter.CategoryId)">
+                                    @item.Name
+                                </option>
+
+                            }
+                        </select>
+                    </div>
+
+                   
+                    <div class="col-md-3 mb-2">
+                        <!-- filter by status -->
+                        <select class="form-select" name="status">
+                            <option value="">All Status</option>
+                            <option value="true" selected="@(Model.Filter?.Status == true)">Available  </option>
+                            <option value="false"selected="@(Model.Filter?.Status == false)"> Not Available </option>
+                        </select>
+                    </div>
+                    <!-- filter by date -->
+                    <div class="col-md-4 mb-2">
+                        <div class="input-group">
+                            <input type="date" class="form-control" name="date" value="@Model.Filter.Date?.ToString("d")">
+                            <button type="button" class="btn btn-outline-secondary"
+                                    onclick="clearDateFilter()" title="Clear Date">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        
+                    </div>
+                    <div class="col-md-3 mb-2 text-md-end">
+                        
+                            <button class="btn btn-primary">Filter</button>
+                       
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+
+    <div class="row">
+        <div class="col-12">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model.Movies)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.Name</td>
+                            <td>@item.Price.ToString("c")</td>
+                            <td>@item.Category.Name</td>
+                            <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                            @if (item.Status)
+                            {
+                                <td><span class="badge text-bg-success">Available</span></td>
+                            }
+                            else
+                            {
+                                <td><span class="badge text-bg-danger">Not Available</span></td>
+                            }
+                            <td >
+                                <a href="/Admin/Movie/Details/@item.Id" class="btn btn-info btn-sm" title="View Details"><i class="fa-solid fa-eye"></i></a>
+                                <a href="/Admin/Movie/Edit/@item.Id" class="btn btn-sm btn-warning btn-edit"><i class="fa-solid fa-pen"></i></a>
+                                <a href="/Admin/Movie/Delete/@item.Id" class="btn btn-sm btn-danger btn-delete"><i class="fa-solid fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 d-flex justify-content-center">
+            <!-- Pagination Placeholder -->
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-center">
+
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="/Admin/Movie/Index?page=@(Model.CurrentPage - 1)&name=@Model.Filter?.Name&minprice=@Model.Filter?.MinPrice&maxprice=@Model.Filter?.MaxPrice&categoryId=@Model.Filter?.CategoryId&status=@Model.Filter?.Status">
+                                Previous
+                            </a>
+                        </li>
+                    }
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if (i == Model.CurrentPage)
+                        {
+                            <li class="page-item active">
+                                <a class="page-link"
+                                   href="/Admin/Movie/Index?page=@i&name=@Model.Filter?.Name&minprice=@Model.Filter?.MinPrice&maxprice=@Model.Filter?.MaxPrice&categoryId=@Model.Filter?.CategoryId&status=@Model.Filter?.Status">
+                                    @i
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="/Admin/Movie/Index?page=@i&name=@Model.Filter?.Name&minprice=@Model.Filter?.MinPrice&maxprice=@Model.Filter?.MaxPrice&categoryId=@Model.Filter?.CategoryId&status=@Model.Filter?.Status">
+                                    @i
+                                </a>
+                            </li>
+                        }
+                    }
+
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="/Admin/Movie/Index?page=@(Model.CurrentPage + 1)&name=@Model.Filter?.Name&minprice=@Model.Filter?.MinPrice&maxprice=@Model.Filter?.MaxPrice&categoryId=@Model.Filter?.CategoryId&status=@Model.Filter?.Status">
+                                Next
+                            </a>
+                        </li>
+                    }
+
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script>
+    document.querySelectorAll(".btn-delete").forEach(btn => {
+        btn.addEventListener("click", function(e) {
+            e.preventDefault();
+            const url = this.getAttribute("href");
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        });
+    });
+
+    const range = document.querySelector("input[type=range]");
+    const priceValue = document.getElementById("priceValue");
+
+    if (range && priceValue) {
+        priceValue.innerText = range.value;
+    }
+
+    function clearDateFilter() {
+        document.getElementById('dateFilter').value = '';
+        document.querySelector('form').submit();
+    }
+</script>

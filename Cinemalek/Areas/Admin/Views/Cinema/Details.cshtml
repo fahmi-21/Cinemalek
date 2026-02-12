@@ -1,0 +1,74 @@
+﻿@model Cinema
+
+<div class="container-fluid px-0" style="gap: 5px">
+
+    <!-- Hero Image Section -->
+    <div style="display:flex; flex-direction: column">
+        <img src="~/Admin/Imgs/CinemasImg/@Model.Img"
+             class="img-fluid w-100"
+             style="height: 50vh; width:100%;"  
+             alt="@Model.Name"/>
+
+        
+    </div>
+
+
+    <!-- Content Section -->
+    <section class="py-3 bg-light"> <!-- قللنا ال padding -->
+        <div class="container">
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-8">
+                    <div style="display: flex; justify-content: center">
+                        <!-- Overlay Text on Image -->
+                        <h1 class="fw-semibold mb-2">
+                            <!-- استخدمنا text-dark بدل text-muted -->
+                            @(string.IsNullOrEmpty(Model.Name) ? "No description available." : Model.Name)
+                        </h1>
+                    </div>
+                    <br />  
+                    <hr />
+                    <div>
+                        @* Description *@
+                        <h3 class="fw-semibold mb-2">Description</h3>
+                        <p class="text-dark fs-6 lh-lg">   <!-- استخدمنا text-dark بدل text-muted -->
+                            @(string.IsNullOrEmpty(Model.Description) ? "No description available." : Model.Description)
+                        </p>
+
+                        @* Location *@
+                        <h3 class="fw-semibold mt-3 mb-2">Location</h3>
+                        <p class="text-dark fs-6 lh-lg">
+                            @(string.IsNullOrEmpty(Model.Location) ? "No location available." : Model.Location)
+                        </p>
+
+                        <div class="mt-4 d-flex gap-3 flex-wrap justify-content-center justify-content-lg-start">
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                                <i class="fa-solid fa-arrow-left me-2"></i>
+                                Back to Cinemas
+                            </a>
+
+                            <a asp-action="Edit"
+                               asp-route-id="@Model.Id"
+                               class="btn btn-warning px-4 py-2 rounded-pill">
+                                <i class="fa-solid fa-pen me-2"></i>
+                                Edit Cinema
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+</div>
+
+<style>
+.text-shadow {
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+</style>
+

@@ -1,0 +1,66 @@
+﻿@model Actor
+
+<div class="container-fluid px-0">
+
+    <!-- Header Section -->
+    <section class="py-5"
+             style="background: linear-gradient(135deg, #141e30, #243b55);">
+        <div class="container">
+            <div class="row align-items-center">
+
+                <div class="col-md-3 text-center">
+                    <img src="~/Admin/Imgs/ActorsImg/@Model.Img"
+                         class="img-fluid rounded-circle border border-4 border-light shadow"
+                         style="max-width: 180px;"
+                         alt="@Model.Name">
+                </div>
+
+                <div class="col-md-9 text-light mt-4 mt-md-0">
+                    <h1 class="fw-bold">@Model.Name</h1>
+                    <p class="opacity-75 mb-0">Actor Profile</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+
+            <div class="row">
+                <div class="col-lg-8">
+
+                    <h4 class="fw-semibold mb-3">Biography</h4>
+
+                    <p class="text-muted fs-6 lh-lg"> @Model.Bio </p>
+
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="p-4 bg-white shadow-sm rounded-3">
+
+                        <h6 class="fw-bold mb-3">Actions</h6>
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="fa-solid fa-arrow-left me-2"></i>
+                            Back to Actors
+                        </a>
+
+                        <a asp-action="Edit"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-warning w-100">
+                            <i class="fa-solid fa-pen me-2"></i>
+                            Edit Actor
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</div>
+

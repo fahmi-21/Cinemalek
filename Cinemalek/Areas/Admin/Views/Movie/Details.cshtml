@@ -1,0 +1,142 @@
+﻿@model Movie
+
+<div class="container-fluid px-0" style="gap: 5px">
+    <!-- Image Section -->
+    <div style="display:flex; flex-direction: column">
+        <img src="~/Admin/Imgs/MoviesImg/@Model.Img"
+             class="img-fluid w-100"
+             style="height: 50vh; width:100%;"
+             alt="@Model.Name" />
+    </div>
+
+    <!-- Content Section -->
+    <section class="py-3 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <!-- Name -->
+                <div class="col-lg-8">
+                    <div style="display: flex; justify-content: center">
+                        <h1 class="fw-semibold mb-2">
+                            @Model.Name
+                        </h1>
+                    </div>
+                    <br />
+                    <hr />
+
+                    <div>
+                        <!-- Description -->
+                        <h3 class="fw-semibold mb-2">Description</h3>
+                        <p class="text-dark fs-6 lh-lg" style=" word-wrap: break-word; overflow-wrap: break-word;">
+                            @(string.IsNullOrEmpty(Model.Description) ? "No description available." : Model.Description)
+                        </p>
+                        <hr />
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Cinema</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>@(Model.Category?.Name ?? "No category")</td>
+                                    <td>@(Model.Cinema?.Name ?? "No cinema")</td>
+                                    <td>@(Model.Price > 0 ? $"${Model.Price:F2}" : "Free")</td>
+                                    <td>@(Model.Status ? "Available" : "Not Available")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <hr />
+                        <br />
+
+                        <!-- date -->
+                        <div class="date-container">
+                            <h3 class="fw-semibold mt-3 mb-2">Date</h3>
+                            <p class="text-dark fs-6">
+                                
+                                @Model.Date.ToString("d")
+                                =
+                                <!-- @ViewBag.FormattedDate -->
+                            </p>
+                        </div>
+                        <br />
+                        <hr />
+
+                        <!-- actors -->
+                        <div class="actors-container d-flex flex-wrap gap-3 mt-3">
+                            <h3 class="fw-semibold w-100 mb-2">Actors</h3>
+
+                            @if (Model.ActorsMovies?.Any() == true)
+                            {
+                                foreach (var actorMovie in Model.ActorsMovies)
+                                {
+                                    var actor = actorMovie.Actor;
+                                    <div class="card actor-card" style="width: 8rem;">
+                                        <!-- هنا التعديل المهم -->
+                                        <img src="~/Admin/Imgs/ActorsImg/@(actor?.Img ?? "default-actor.jpg")"
+                                             class="card-img-top"
+                                             alt="@actor?.Name"
+                                             style="height: 150px; object-fit: cover;">
+
+                                        <div class="card-body p-2 text-center">
+                                            <h6 class="card-title mb-2">@actor?.Name</h6>
+
+                                            @if (actor != null)
+                                            {
+                                                <a href="/Admin/Actor/Details/@actor.Id"
+                                                   class="btn btn-sm btn-primary">
+                                                    Details
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted fs-6">No actors available.</p>
+                            }
+                        </div>
+                        <br />
+                        <br />
+                        <hr />
+
+                        <div class="mt-4 d-flex gap-3 flex-wrap justify-content-center justify-content-lg-start">
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                                <i class="fa-solid fa-arrow-left me-2"></i>
+                                Back to Movies
+                            </a>
+
+                            <a asp-action="Edit" asp-route-id="@Model.Id"
+                               class="btn btn-warning px-4 py-2 rounded-pill">
+                                <i class="fa-solid fa-pen me-2"></i>
+                                Edit Movie
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    .text-shadow {
+        text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+
+    .actor-card {
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .actor-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+</style>

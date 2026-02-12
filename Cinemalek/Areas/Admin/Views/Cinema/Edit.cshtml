@@ -1,0 +1,67 @@
+﻿@model Cinema
+
+<div class="container">
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-6">
+            <h2 class="display-6">Edit Cinema</h2>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        <!-- Hidden Id -->
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <!-- Cinema Name -->
+        <div class="mb-3">
+            <label for="Name" class="form-label">Cinema Name</label>
+            <input type="text" class="form-control" id="Name" name="Name" placeholder="Enter Cinema name" value="@Model.Name">
+        </div>
+
+        <!-- Profile Picture -->
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Choose Image</label>
+            <input class="form-control" type="file" id="formFile" name="Img" onchange="previewImage(event)" />
+        </div>
+
+        <!-- Current / Preview Image -->
+        <div class="mb-3">
+            <img id="preview"
+                 src="~/Admin/Imgs/CinemasImg/@Model.Img?v=@DateTime.Now.Ticks"
+                 alt="current image"
+                 style="max-width: 200px; border: 1px solid #ccc; padding: 5px; border-radius: 10px;" />
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+            <label for="Description" class="form-label">Description</label>
+            <textarea class="form-control" id="Description" name="Description" rows="5" placeholder="Enter Description">@Model.Description</textarea>
+        </div>
+
+        <!-- Location -->
+        <div class="mb-3">
+            <label for="Location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="Location" name="Location" placeholder="Enter your location" value="@Model.Location">
+            <div class="form-text">Type your city, state or country.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-6">
+            Save
+        </button>
+    </form>
+</div>
+
+<script>
+    function previewImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('preview');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
