@@ -24,15 +24,24 @@ namespace Cinemalek.Areas.Admin.Controllers
             double totalPages = Math.Ceiling(categories.Count / (double)pageSize);
             categories = categories.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            //var pagedCategories = categories
-            //                    .Skip((page - 1) * pageSize)
-            //                    .Take(pageSize)
-            //                    .ToList();
             //var moviesCount = new Dictionary<int, int>();
-            //foreach (var category in pagedCategories)
+            //var moviesRepo = new Repositories<Movie>();
+
+            //foreach (var category in categories)
             //{
-                
+            //   var moviesCount = await moviesRepo.AnyAsync(m => m.CategoryId == category.Id) ? 1 : 0;
             //}
+
+            //var moviesRepo = new Repositories<Movie>();
+
+            
+
+            //foreach (var category in categories)
+            //{
+            //    var count = await moviesRepo.CountAsync(m => m.CategoryId == category.Id);
+            //    moviesCount.Add(category.Id, count);
+            //}
+
 
             return View(new CategoriesVM
             {
@@ -41,6 +50,7 @@ namespace Cinemalek.Areas.Admin.Controllers
                 TotalPages = totalPages,
                 CategoryName = name,
                 Status = status,
+
             });
         }
 

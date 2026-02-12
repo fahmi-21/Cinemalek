@@ -1,10 +1,12 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
+
 namespace Cinemalek.Repository
 {
     public class Repositories <T> where T : class
     {
         protected AppDbContext _context = new();
-        public DbSet<T> _DbSet;
+        protected DbSet<T> _DbSet;
         public Repositories()
         {
             _DbSet =  _context.Set<T>();
@@ -24,19 +26,24 @@ namespace Cinemalek.Repository
         {
             _DbSet.Remove ( entity );
         }
-        
-        public  async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? expression = null , bool tracked = true )
+
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? expression = null, Expression<Func<T, object>>[]? includes = null , bool tracked = true )
         {
             var categories = _DbSet.AsQueryable ();
 
             //filter 
             if (expression is not null)
-            {
                 categories = categories.Where(expression);
-            }
             if (!tracked)
-            {
                 categories = categories.AsNoTracking ();
+            if (includes is not null)
+            {
+                foreach ( var include in includes)
+                {
+                    if (include is not null)
+                        categories = categories.Include(include);
+                }
+
             }
 
             return await categories.ToListAsync();
@@ -44,7 +51,7 @@ namespace Cinemalek.Repository
         public  async Task<T?> GetOneAsync(Expression<Func<T, bool>>? expression , bool tracked = true)
         {
 
-            return (await GetAllAsync(expression , tracked)).FirstOrDefault();
+            return (await GetAllAsync(expression , tracked )).FirstOrDefault();
         }
 
         public async Task<int> Commitasync()
@@ -63,6 +70,7 @@ namespace Cinemalek.Repository
         {
             return await _context.Set<T>().AnyAsync(expression);
         }
+
 
     }
 }

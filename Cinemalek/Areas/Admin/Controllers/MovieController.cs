@@ -1,294 +1,195 @@
 ﻿using Cinemalek.Models;
 using Cinemalek.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Cinemalek.Areas.Admin.Controllers
 {
-    [Area(SD.ADMIN_AREA)]
-    public class MovieController : Controller
+    using Microsoft.AspNetCore.Mvc;
+using System.Linq.Expressions;
+using Cinemalek.Repository;
+
+[Area(SD.ADMIN_AREA)]
+public class MovieController : Controller
+{
+    private readonly Repositories<Movie> _movieRepository = new();
+    private readonly Repositories<Category> _categoryRepository = new();
+    private readonly Repositories<Cinema> _cinemaRepository = new();
+    private readonly Repositories<Actor> _actorRepository = new();
+    private readonly Repositories<MovieSubImg> _subImgRepository = new();
+
+    // ========================== INDEX ==========================
+    public async Task<IActionResult> Index(MovieFilterVM? filter, int page = 1)
     {
-        AppDbContext _context = new AppDbContext();
-        private Repositories
+        var movies = await _movieRepository.GetAllAsync(
+            includes: new Expression<Func<Movie, object>>[]
+            {
+                e => e.Category,
+                e => e.Cinema
+            },
+            tracked: false);
 
-        public IActionResult Index(MovieFilterVM? movieFilterVM, int page = 1)
+        
+
+        if (filter != null)
         {
-            var movies = _context.Movies
-                .AsNoTracking()
-                .Include(m => m.Category)
-                .Include(m => m.Cinema)
-                .AsQueryable();
+            if (!string.IsNullOrEmpty(filter.Name))
+                movies = movies.Where(m => m.Name.Contains(filter.Name)).ToList();
 
-            if (movieFilterVM != null)
-            {
-                if (!string.IsNullOrEmpty(movieFilterVM.Name))
-                    movies = movies.Where(m => m.Name.Contains(movieFilterVM.Name));
+            if (filter.MinPrice.HasValue)
+                movies = movies.Where(m => m.Price >= filter.MinPrice).ToList();
 
-                if (movieFilterVM.MinPrice.HasValue)
-                    movies = movies.Where(m => m.Price >= movieFilterVM.MinPrice.Value);
+            if (filter.MaxPrice.HasValue)
+                movies = movies.Where(m => m.Price <= filter.MaxPrice).ToList();
 
-                if (movieFilterVM.MaxPrice.HasValue)
-                    movies = movies.Where(m => m.Price <= movieFilterVM.MaxPrice.Value);
+            if (filter.CategoryId.HasValue)
+                movies = movies.Where(m => m.CategoryId == filter.CategoryId).ToList();
 
-                if (movieFilterVM.CategoryId.HasValue)
-                    movies = movies.Where(m => m.CategoryId == movieFilterVM.CategoryId);
+            if (filter.Date.HasValue)
+                movies = movies.Where(m => m.Date.Date == filter.Date.Value.Date).ToList();
 
-                if (movieFilterVM.Date.HasValue)
-                    movies = movies.Where(m => m.Date.Date == movieFilterVM.Date.Value.Date);
-
-                if (movieFilterVM.Status.HasValue)
-                    movies = movies.Where(m => m.Status == movieFilterVM.Status.Value);
-            }
-
-            int pageSize = 5;
-            int totalPages = (int)Math.Ceiling(movies.Count() / (double)pageSize);
-            page = Math.Max(page, 1);
-
-            var pagedMovies = movies.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-            return View(new MovieVM
-            {
-                Movies = pagedMovies,
-                CurrentPage = page,
-                TotalPages = totalPages,
-                Categories = _context.Categories.AsNoTracking().ToList(),
-                Cinemas = _context.Cinemas.AsNoTracking().ToList(),
-                Filter = movieFilterVM
-            });
+            if (filter.Status.HasValue)
+                movies = movies.Where(m => m.Status == filter.Status).ToList();
         }
 
-        [HttpGet]
-        public IActionResult Create()
+        int pageSize = 5;
+        int totalPages = (int)Math.Ceiling(movies.Count() / (double)pageSize);
+        page = Math.Max(page, 1);
+
+        var paged = movies.Skip((page - 1) * pageSize)
+                         .Take(pageSize)
+                         .ToList();
+
+        return View(new MovieVM
         {
-            var categories = _context.Categories.AsNoTracking().AsQueryable();
-            var cinemas = _context.Cinemas.AsNoTracking().AsQueryable();
-            var actors = _context.Actors.AsNoTracking().AsQueryable();
-            return View(new MovieCreateVM
-            {
-                Movie = new Movie(),
-                Categories = categories.AsEnumerable(),
-                Cinemas = cinemas.AsEnumerable(),
-                Actors = actors.AsEnumerable()
-            });
+            Movies = paged,
+            Categories = await _categoryRepository.GetAllAsync(tracked: false),
+            Cinemas = await _cinemaRepository.GetAllAsync(tracked: false),
+            CurrentPage = page,
+            TotalPages = totalPages,
+            Filter = filter
+        });
+    }
+
+    // ========================== CREATE GET ==========================
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        return View(new MovieCreateVM
+        {
+            Movie = new Movie(),
+            Categories = await _categoryRepository.GetAllAsync(tracked: false),
+            Cinemas = await _cinemaRepository.GetAllAsync(tracked: false),
+            Actors = await _actorRepository.GetAllAsync(tracked: false)
+        });
+    }
+
+    // ========================== CREATE POST ==========================
+    [HttpPost]
+    public async Task<IActionResult> Create(
+        MovieCreateVM vm,
+        IFormFile? MainImg,
+        List<IFormFile>? SubImgs,
+        List<int>? actorsid)
+    {
+        if (await _movieRepository.AnyAsync(m => m.Name == vm.Movie.Name))
+        {
+            ModelState.AddModelError("Movie.Name", "Movie name already exists");
         }
 
-        [HttpPost]
-        public IActionResult Create( MovieCreateVM movieCreateVM, IFormFile MainImg, List<IFormFile> SubImgs, List<int> actorsid)
+        if (!ModelState.IsValid)
         {
-            
-            
-            if (!string.IsNullOrWhiteSpace(movieCreateVM.Movie.Name))
-            {
-                bool exists = _context.Movies.Any(m => m.Name == movieCreateVM.Movie.Name);
-                if (exists)
-                {
-                    ModelState.AddModelError("Movie.Name", "Movie name already exists");
-                    if (!ModelState.IsValid)
-                    {
-                        movieCreateVM.Categories = _context.Categories.AsNoTracking().ToList();
-                        movieCreateVM.Cinemas = _context.Cinemas.AsNoTracking().ToList();
-                        movieCreateVM.Actors = _context.Actors.AsNoTracking().ToList();
-
-                        return View(movieCreateVM);
-                    }
-                }
-
-
-
-            }
-
-            // ================== Main Image ==================
-            if (MainImg is not null && MainImg.Length > 0)
-            {
-                var newfilename = Guid.NewGuid() + DateTime.UtcNow.ToString("dd-MM-yyyy")
-                                  + Path.GetExtension(MainImg.FileName);
-
-                var filepath = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot/Admin/Imgs/MoviesImg",
-                    newfilename);
-
-                using var stream = System.IO.File.Create(filepath);
-                MainImg.CopyTo(stream);
-
-                movieCreateVM.Movie.Img = newfilename;
-            }
-
-            // ================== Sub Images ==================
-            if (SubImgs is not null && SubImgs.Any())
-            {
-                movieCreateVM.Movie.SubImages = new List<MovieSubImg>();
-
-                foreach (var img in SubImgs)
-                {
-                    if (img.Length > 0)
-                    {
-                        var newImgname = Guid.NewGuid() + Path.GetExtension(img.FileName);
-                        var filePath = Path.Combine(
-                            Directory.GetCurrentDirectory(),
-                            "wwwroot/Admin/Imgs/MoviesImg/SubImgs",
-                            newImgname);
-
-                        using var stream = System.IO.File.Create(filePath);
-                        img.CopyTo(stream);
-
-                        movieCreateVM.Movie.SubImages.Add(new MovieSubImg { Img = newImgname });
-                    }
-                }
-            }
-
-            // ================== Actors ==================
-            if (actorsid is not null && actorsid.Any())
-            {
-                movieCreateVM.Movie.ActorsMovies = new List<ActorMovie>();
-
-                foreach (var actorId in actorsid)
-                {
-                    movieCreateVM.Movie.ActorsMovies.Add(new ActorMovie
-                    {
-                        ActorId = actorId
-                    });
-                }
-            }
-
-            // ================== Save ==================
-            _context.Movies.Add(movieCreateVM.Movie);
-            _context.SaveChanges();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-
-        public IActionResult Delete([FromRoute]int id)
-        {
-            
-            var movie = _context.Movies.Find(id);
-            
-
-            _context.Movies.Remove(movie);
-            _context.SaveChanges();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpGet]
-        public IActionResult Edit([FromRoute] int id)
-        {
-            var movie = _context.Movies
-                .Include(e => e.ActorsMovies) 
-                    .ThenInclude(am => am.Actor)
-                .Include(e => e.Category)
-                .Include(e => e.Cinema)
-                .Include(e => e.SubImages)
-                .FirstOrDefault(m => m.Id == id);
-
-            if (movie == null) return NotFound();
-
-            var vm = new MovieEditVM
-            {
-                Movie = movie,
-                SubImgs = movie.SubImages,
-                Categories = _context.Categories.ToList(),
-                Cinemas = _context.Cinemas.ToList(),
-                Actors = _context.Actors.ToList(),
-                SelectedActorIds = movie.ActorsMovies.Select(am => am.ActorId).ToList()  
-            };
-
+            vm.Categories = await _categoryRepository.GetAllAsync();
+            vm.Cinemas = await _cinemaRepository.GetAllAsync();
+            vm.Actors = await _actorRepository.GetAllAsync();
             return View(vm);
         }
 
-        [HttpPost]
-        public IActionResult Edit(Movie? movie, IFormFile? mainimg, List<IFormFile>? subimgs, List<int>? actorsid)
+        // Main Image
+        if (MainImg != null && MainImg.Length > 0)
         {
-            if (movie == null) return NotFound();
+            var folder = Path.Combine(Directory.GetCurrentDirectory(),
+                "wwwroot/Admin/Imgs/MoviesImg");
+            Directory.CreateDirectory(folder);
 
-            var movieDb = _context.Movies
-                .Include(m => m.ActorsMovies)  
-                .Include(m => m.SubImages)
-                .FirstOrDefault(m => m.Id == movie.Id);
+            var fileName = Guid.NewGuid() +
+                DateTime.UtcNow.ToString("yyyyMMdd") +
+                Path.GetExtension(MainImg.FileName);
 
-            if (movieDb == null) return NotFound();
+            var path = Path.Combine(folder, fileName);
+            using var stream = System.IO.File.Create(path);
+            await MainImg.CopyToAsync(stream);
 
-            if (_context.Movies.Any(m => m.Name.ToLower() == movie.Name.ToLower() && m.Id != movie.Id))
-                ModelState.AddModelError("Name", "Movie name already exists");
-
-            if (!ModelState.IsValid)
-                return View(movieDb);
-
-            movieDb.Name = movie.Name;
-            movieDb.Description = movie.Description;
-            movieDb.Price = movie.Price;
-            movieDb.Date = movie.Date;
-            movieDb.Status = movie.Status;
-            movieDb.CategoryId = movie.CategoryId;
-            movieDb.CinemaId = movie.CinemaId;
-
-            if (mainimg != null && mainimg.Length > 0)
-            {
-                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Admin", "Imgs", "MoviesImg");
-                Directory.CreateDirectory(folder);
-
-                var oldPath = Path.Combine(folder, movieDb.Img);
-                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-
-                var newName = Guid.NewGuid() + DateTime.UtcNow.ToString("yyyyMMdd") + Path.GetExtension(mainimg.FileName);
-                var path = Path.Combine(folder, newName);
-                using (var stream = System.IO.File.Create(path)) mainimg.CopyTo(stream);
-
-                movieDb.Img = newName;
-            }
-
-            var subFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Admin", "Imgs", "MoviesImg", "SubImgs");
-            Directory.CreateDirectory(subFolder);
-
-            if (subimgs != null && subimgs.Any())
-            {
-                foreach (var oldImg in movieDb.SubImages.ToList())
-                {
-                    var oldFile = Path.Combine(subFolder, oldImg.Img);
-                    if (System.IO.File.Exists(oldFile)) System.IO.File.Delete(oldFile);
-                }
-                _context.MovieSubImgs.RemoveRange(movieDb.SubImages);
-                movieDb.SubImages.Clear();
-
-                foreach (var img in subimgs)
-                {
-                    var fileName = Guid.NewGuid() + DateTime.UtcNow.ToString("yyyyMMdd") + Path.GetExtension(img.FileName);
-                    var filePath = Path.Combine(subFolder, fileName);
-                    using (var stream = System.IO.File.Create(filePath)) img.CopyTo(stream);
-
-                    movieDb.SubImages.Add(new MovieSubImg { Img = fileName });
-                }
-            }
-
-           
-            movieDb.ActorsMovies.Clear();
-            if (actorsid != null && actorsid.Any())
-            {
-                foreach (var actorId in actorsid)
-                {
-                    movieDb.ActorsMovies.Add(new ActorMovie { ActorId = actorId });
-                }
-            }
-
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            vm.Movie.Img = fileName;
         }
 
-        public IActionResult Details([FromRoute] int id)
+        // Sub Images
+        if (SubImgs != null && SubImgs.Any())
         {
-            var movie = _context.Movies
-                .AsNoTracking()
-                .Include(m => m.SubImages)
-                .Include(m => m.Category)
-                .Include(m => m.Cinema)
-                .Include(m => m.ActorsMovies)
-                    .ThenInclude(am => am.Actor)
-                .FirstOrDefault(m => m.Id == id);
+            var folder = Path.Combine(Directory.GetCurrentDirectory(),
+                "wwwroot/Admin/Imgs/MoviesImg/SubImgs");
+            Directory.CreateDirectory(folder);
 
-            if (movie == null)
-                return NotFound();
+            vm.Movie.SubImages = new List<MovieSubImg>();
 
-            return View(movie);
+            foreach (var img in SubImgs)
+            {
+                var fileName = Guid.NewGuid() +
+                    DateTime.UtcNow.ToString("yyyyMMdd") +
+                    Path.GetExtension(img.FileName);
+
+                var path = Path.Combine(folder, fileName);
+                using var stream = System.IO.File.Create(path);
+                await img.CopyToAsync(stream);
+
+                vm.Movie.SubImages.Add(new MovieSubImg { Img = fileName });
+            }
         }
+
+        // Actors
+        if (actorsid != null && actorsid.Any())
+        {
+            vm.Movie.ActorsMovies = actorsid
+                .Select(id => new ActorMovie { ActorId = id })
+                .ToList();
+        }
+
+        await _movieRepository.CreateAsync(vm.Movie);
+        await _movieRepository.Commitasync();
+
+        return RedirectToAction(nameof(Index));
     }
+
+    // ========================== DELETE ==========================
+    public async Task<IActionResult> Delete(int id)
+    {
+        var movie = await _movieRepository.GetOneAsync(m => m.Id == id);
+        if (movie == null) return NotFound();
+
+        _movieRepository.Delete(movie);
+        await _movieRepository.Commitasync();
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    // ========================== DETAILS ==========================
+    public async Task<IActionResult> Details(int id)
+    {
+        var movie = (await _movieRepository.GetAllAsync(
+            m => m.Id == id,
+            includes: new Expression<Func<Movie, object>>[]
+            {
+                e => e.SubImages,
+                e => e.Category,
+                e => e.Cinema,
+                e => e.ActorsMovies
+            },
+            tracked: false)).FirstOrDefault();
+
+        if (movie == null) return NotFound();
+
+        return View(movie);
+    }
+}
+
 }
