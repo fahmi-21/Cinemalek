@@ -9,7 +9,11 @@ namespace Cinemalek.Areas.Admin.Controllers
     public class ActorController : Controller
     {
         
-        private Repositories<Actor> repository = new();
+        private IRepository<Actor> repository;
+        public ActorController(IRepository<Actor> repository)
+        {
+            this.repository = repository;
+        }
         public async Task<IActionResult> Index(string actorname, int page = 1)
         {
             var actors = await repository.GetAllAsync(tracked: false);

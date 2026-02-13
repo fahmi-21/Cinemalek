@@ -8,7 +8,11 @@ namespace Cinemalek.Areas.Admin.Controllers
     public class CinemaController : Controller
     {
        
-        private Repositories<Cinema> repository = new();
+        private IRepository<Cinema> repository ;
+        public CinemaController(IRepository<Cinema> repository)
+        {
+            this.repository = repository;
+        }
 
         public async Task<IActionResult> Index ( string? name , int page = 1 )
         {

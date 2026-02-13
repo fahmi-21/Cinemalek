@@ -1,4 +1,4 @@
-﻿using Cinemalek.Models;
+﻿
 using Cinemalek.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -8,12 +8,21 @@ namespace Cinemalek.Areas.Admin.Controllers
     [Area(SD.ADMIN_AREA)]
     public class MovieController : Controller
     {
-        private AppDbContext _context = new AppDbContext();
-        private Repositories<Movie> repository = new();
-        private Repositories<Category> categoryRepository = new();
-        private Repositories<Cinema> cinemaRepository = new();
-        private Repositories<Actor> actorRepository = new();
-        private MovieSubImgsRepository subImgRepository = new();
+        private IRepository<Movie> repository;
+        private IRepository<Category> categoryRepository ;
+        private IRepository<Cinema> cinemaRepository ;
+        private IRepository<Actor> actorRepository;
+        private IMovieSubImgsREpository subImgRepository ;
+
+        public MovieController(IRepository<Movie> repository, IRepository<Category> categoryRepository, IRepository<Cinema> cinemaRepository, IRepository<Actor> actorRepository, IMovieSubImgsREpository subImgRepository)
+        {
+            this.repository = repository;
+            this.categoryRepository = categoryRepository;
+            this.cinemaRepository = cinemaRepository;
+            this.actorRepository = actorRepository;
+            this.subImgRepository = subImgRepository;
+        }
+
 
         public async Task<IActionResult> Index(MovieFilterVM filter, int page = 1)
         {
@@ -62,8 +71,8 @@ namespace Cinemalek.Areas.Admin.Controllers
             return View(new MovieVM
             {
                 Movies = movies,
-                Categories = _context.Categories.ToList(),
-                Cinemas = _context.Cinemas.ToList(),
+                Categories = await categoryRepository.GetAllAsync(),
+                Cinemas = await cinemaRepository.GetAllAsync(),
                 CurrentPage = currentPage,
                 TotalPages = (int)totalPages,
                 Filter = filter
@@ -322,32 +331,49 @@ namespace Cinemalek.Areas.Admin.Controllers
             await repository.Commitasync();
 
             return RedirectToAction(nameof(Index));
-        }        
-        public async Task<IActionResult> Details([FromRoute] int Id)
+        }
+        [HttpGet]
+        public async Task<IActionResult> Details(int Id)
         {
-            var movie = await _context.Movies
-                .Include(m => m.Category)
-                .Include(m => m.Cinema)
-                .Include(m => m.ActorsMovies)      // جلب ActorMovies
-                .ThenInclude(am => am.Actor)   // جلب Actor لكل ActorMovie
-                .FirstOrDefaultAsync(m => m.Id == Id);
+            // جلب الفيلم مع Category, Cinema, وActorsMovies فقط
+            var movies = await repository.GetAllAsync(
+                expression: m => m.Id == Id,
+                includes: new Expression<Func<Movie, object>>[]
+                {
+            m => m.Category,
+            m => m.Cinema,
+            m => m.ActorsMovies
+                },
+                tracked: false
+            );
 
-            if (movie == null)
-                return NotFound();
+            var movie = movies.FirstOrDefault();
+            if (movie == null) return NotFound();
+
+            // جلب كل الممثلين المرتبطين
+            var actors = new List<Actor>();
+            if (movie.ActorsMovies != null && movie.ActorsMovies.Any())
+            {
+                var actorIds = movie.ActorsMovies.Select(am => am.ActorId).ToList();
+                actors = (await actorRepository.GetAllAsync(a => actorIds.Contains(a.Id), tracked: false)).ToList();
+            }
+
+            // SubImages لو محتاج
+            var subImgs = movie.SubImages?.ToList() ?? new List<MovieSubImg>();
 
             var movieVM = new MovieDetailsVM
             {
                 Movie = movie,
                 Category = movie.Category,
                 Cinema = movie.Cinema,
-                Actors = movie.ActorsMovies.Select(am => am.Actor).ToList()
-                // SubImgs لو محتاج
+                Actors = actors,
+                SubImgs = subImgs
             };
 
             return View(movieVM);
-
-            return View(movieVM);
         }
+
+
 
 
 

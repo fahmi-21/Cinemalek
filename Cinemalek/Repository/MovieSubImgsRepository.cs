@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace Cinemalek.Repository
 {
-    public class MovieSubImgsRepository : Repositories <MovieSubImg>
+    public class MovieSubImgsRepository : Repositories <MovieSubImg> , IMovieSubImgsREpository
     {
         public void DeleteRange (IEnumerable<MovieSubImg> subimgsList ) 
         { 

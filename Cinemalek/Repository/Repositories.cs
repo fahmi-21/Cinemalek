@@ -1,9 +1,7 @@
 ﻿
-using Microsoft.EntityFrameworkCore;
-
 namespace Cinemalek.Repository
 {
-    public class Repositories <T> where T : class
+    public class Repositories <T> : IRepository<T> where T : class
     {
         protected AppDbContext _context = new();
         protected DbSet<T> _DbSet;

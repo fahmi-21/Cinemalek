@@ -8,7 +8,12 @@ namespace Cinemalek.Areas.Admin.Controllers
     [Area(SD.ADMIN_AREA)]
     public class CategoryController : Controller
     {
-        private Repositories<Category> repository = new();
+        private IRepository<Category> repository;
+
+        public CategoryController(IRepository<Category> repository)
+        {
+            this.repository = repository;
+        }
         public async Task<IActionResult> Index(string? name, bool? status, int page = 1)
         {
             var categories = await repository.GetAllAsync( tracked : false);
