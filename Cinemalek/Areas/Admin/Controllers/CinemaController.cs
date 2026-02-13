@@ -16,7 +16,7 @@ namespace Cinemalek.Areas.Admin.Controllers
 
             if ( name is not null )
             {
-                cinemas= cinemas.Where( e => e.Name == name ).ToList();
+                cinemas= cinemas.Where( e => e.Name.ToLower() == name.ToLower() ).ToList();
             }
 
             //pagination 

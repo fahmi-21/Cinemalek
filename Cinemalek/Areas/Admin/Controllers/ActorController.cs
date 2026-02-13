@@ -15,7 +15,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             var actors = await repository.GetAllAsync(tracked: false);
 
             if (!string.IsNullOrWhiteSpace(actorname))
-                actors = actors.Where(c => c.Name.Contains(actorname)).ToList();
+                actors = actors.Where(c => c.Name.ToLower().Contains(actorname.ToLower())).ToList();
 
             // Pagination---------------------------------------------
             if (page < 1)

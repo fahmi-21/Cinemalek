@@ -14,33 +14,22 @@ namespace Cinemalek.Areas.Admin.Controllers
             var categories = await repository.GetAllAsync( tracked : false);
 
             if (!string.IsNullOrWhiteSpace(name))
-                categories = categories.Where(c => c.Name.Contains(name)).ToList();
+                categories = categories
+                    .Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
             if (status.HasValue)
-                categories = categories.Where(c => c.Status == status.Value).ToList();
+                categories = categories
+                    .Where(c => c.Status == status.Value)
+                    .ToList();
+
 
             int pageSize = 5;
             int currentpage = page;
             double totalPages = Math.Ceiling(categories.Count / (double)pageSize);
             categories = categories.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            //var moviesCount = new Dictionary<int, int>();
-            //var moviesRepo = new Repositories<Movie>();
-
-            //foreach (var category in categories)
-            //{
-            //   var moviesCount = await moviesRepo.AnyAsync(m => m.CategoryId == category.Id) ? 1 : 0;
-            //}
-
-            //var moviesRepo = new Repositories<Movie>();
-
             
-
-            //foreach (var category in categories)
-            //{
-            //    var count = await moviesRepo.CountAsync(m => m.CategoryId == category.Id);
-            //    moviesCount.Add(category.Id, count);
-            //}
 
 
             return View(new CategoriesVM
@@ -105,7 +94,7 @@ namespace Cinemalek.Areas.Admin.Controllers
                 return View(category);
             }
 
-            await repository.CreateAsync(category);
+            repository.Edit(category);
             await repository.Commitasync();
             return RedirectToAction(nameof(Index));
         }

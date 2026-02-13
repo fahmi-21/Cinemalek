@@ -7,32 +7,27 @@
         </div>
     </div>
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" asp-action="Edit" asp-route-id="@Model.Movie?.Id">
 
         <!-- Movie Name -->
         <div class="mb-3">
-            <label for="Name" class="form-label">Movie Name</label>
-            <input type="text"
-                   class="form-control"
-                   id="Name"
-                   name="Name"
-                   value="@Model.Movie.Name"
-                   placeholder="Enter Movie name">
+            <label class="form-label">Movie Name</label>
+            <input type="text" class="form-control" name="Movie.Name" value="@Model.Movie?.Name" placeholder="Enter Movie name" />
         </div>
 
         <!-- Category -->
         <div class="mb-3">
             <label class="form-label">Category</label>
-            <select class="form-select" name="CategoryId">
-                @foreach (var category in Model.Categories)
+            <select class="form-select" name="Movie.CategoryId">
+                @foreach (var category in Model.Categories ?? new List<Category>())
                 {
-                    if ( category.Id == Model.Movie.CategoryId)
+                    if (category.Id == Model.Movie?.CategoryId)
                     {
-                        <option value="@category.Id" selected> @category.Name </option>        
+                        <option value="@category.Id" selected>@category.Name</option>
                     }
                     else
                     {
-                        <option value="@category.Id">  @category.Name </option>
+                        <option value="@category.Id">@category.Name</option>
                     }
                 }
             </select>
@@ -41,16 +36,16 @@
         <!-- Cinema -->
         <div class="mb-3">
             <label class="form-label">Cinema</label>
-            <select class="form-select" name="CinemaId">
-                @foreach (var cinema in Model.Cinemas)
+            <select class="form-select" name="Movie.CinemaId">
+                @foreach (var cinema in Model.Cinemas ?? new List<Cinema>())
                 {
-                    if ( cinema.Id == Model.Movie.CinemaId) 
+                    if (cinema.Id == Model.Movie?.CinemaId)
                     {
-                        <option value="@cinema.Id" selected> @cinema.Name </option>
+                        <option value="@cinema.Id" selected>@cinema.Name</option>
                     }
                     else
                     {
-                        <option value="@cinema.Id"> @cinema.Name </option>
+                        <option value="@cinema.Id">@cinema.Name</option>
                     }
                 }
             </select>
@@ -60,15 +55,15 @@
         <div class="mb-3">
             <label class="form-label">Cast</label>
             <select class="form-select" name="actorsid" multiple>
-                @foreach (var actor in Model.Actors)
+                @foreach (var actor in Model.Actors ?? new List<Actor>())
                 {
-                    @if (Model.SelectedActorIds.Contains(actor.Id))
+                    if (Model.SelectedActorIds?.Contains(actor.Id) == true)
                     {
-                        <option value="@actor.Id" selected> @actor.Name </option>
+                        <option value="@actor.Id" selected>@actor.Name</option>
                     }
                     else
                     {
-                        <option value="@actor.Id"> @actor.Name </option>
+                        <option value="@actor.Id">@actor.Name</option>
                     }
                 }
             </select>
@@ -77,11 +72,11 @@
         <!-- Main Image -->
         <div class="mb-3">
             <label class="form-label">Profile Img</label>
-            <input class="form-control" type="file" name="mainimg" onchange="previewImage(event)">
+            <input class="form-control" type="file" name="MainImg" onchange="previewImage(event)">
         </div>
         <div class="mb-3">
             <img id="preview"
-                 src="~/Admin/Imgs/MoviesImg/@Model.Movie.Img?v=@DateTime.Now.Ticks"
+                 src="~/Admin/Imgs/MoviesImg/@Model.Movie?.Img?v=@DateTime.Now.Ticks"
                  alt="Current Image"
                  style="max-width:200px; border:1px solid #ccc; padding:5px; border-radius:10px;" />
         </div>
@@ -89,11 +84,11 @@
         <!-- Sub Images -->
         <div class="mb-3">
             <label class="form-label">Sub Imgs</label>
-            <input class="form-control" type="file" name="subimgs" multiple>
+            <input class="form-control" type="file" name="SubImgs" multiple>
         </div>
 
         <div class="d-flex gap-2 mb-3">
-            @foreach (var img in Model.SubImgs)
+            @foreach (var img in Model.SubImgs ?? new List<MovieSubImg>())
             {
                 <img src="~/Admin/Imgs/MoviesImg/SubImgs/@img.Img"
                      alt="Sub Image"
@@ -104,11 +99,11 @@
         <!-- Status -->
         <div class="mb-3">
             <label class="form-label">Status</label>
-            <select class="form-select" name="Status">
-                @if ( Model.Movie.Status == true)
+            <select class="form-select" name="Movie.Status">
+                @if (Model.Movie?.Status == true)
                 {
                     <option value="true" selected>Active</option>
-                    <option value="false" >Not Active</option>
+                    <option value="false">Not Active</option>
                 }
                 else
                 {
@@ -121,20 +116,20 @@
         <!-- Price -->
         <div class="mb-3">
             <label class="form-label">Price</label>
-            <input type="text" class="form-control" name="Price" value="@Model.Movie.Price">
+            <input type="text" class="form-control" name="Movie.Price" value="@Model.Movie?.Price" />
         </div>
 
         <!-- Date -->
         <div class="mb-3">
             <label class="form-label">Date</label>
-            <input type="datetime-local" class="form-control" name="Date"
-                   value="@Model.Movie.Date.ToString("yyyy-MM-ddTHH:mm")">
+            <input type="datetime-local" class="form-control" name="Movie.Date"
+                   value="@Model.Movie?.Date.ToString("yyyy-MM-ddTHH:mm")" />
         </div>
 
         <!-- Description -->
         <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea class="form-control" name="Description" rows="5">@Model.Movie.Description</textarea>
+            <textarea class="form-control" name="Movie.Description" rows="5">@Model.Movie?.Description</textarea>
         </div>
 
         <button type="submit" class="btn btn-primary px-6">Save</button>

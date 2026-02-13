@@ -12,5 +12,6 @@ global using System.IO;
 global using System.Linq.Expressions;
 global using Cinemalek.Repository;
 global using System.Threading.Tasks;
+global using System;
 
 

@@ -33,12 +33,16 @@
                 <div class="col-md-4 mb-2">
                     <select class="form-select" name="status">
                         <option value="">All Status</option>
-                        <option value="true" selected="@(Model.Status == true)">
-                            Available
-                        </option>
-                        <option value="false" selected="@(Model.Status == false)">
-                            Not Available
-                        </option>
+                        @if (Model.Status == true)
+                        {
+                            <option value="true" selected>Available</option>
+                            <option value="false">Not Available</option>
+                        }
+                        else
+                        {
+                            <option value="true" >Available</option>
+                            <option value="false" selected>Not Available</option>  
+                        }
                     </select>
                 </div>
 
