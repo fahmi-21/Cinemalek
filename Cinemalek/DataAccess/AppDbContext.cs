@@ -12,11 +12,8 @@ namespace Cinemalek.DataAccess
         public DbSet<MovieSubImg> MovieSubImgs { get; set; }
         public DbSet<ActorMovie> ActorsMovies { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-            optionsBuilder.UseSqlServer(
-                "Data Source=.\\SQLEXPRESS;Integrated Security=True;Initial Catalog=Cinemalek;Encrypt=False;Trust Server Certificate=True;"
-            );
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

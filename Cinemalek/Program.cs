@@ -8,6 +8,13 @@ namespace Cinemalek
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<AppDbContext>( 
+                options =>
+                {
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                }
+                
+            );
             builder.Services.AddScoped(typeof(IRepository<Category>), typeof(Repositories<Category>));
             builder.Services.AddScoped(typeof(IRepository<Actor>), typeof(Repositories<Actor>));
             builder.Services.AddScoped(typeof(IRepository<Cinema>), typeof(Repositories<Cinema>));

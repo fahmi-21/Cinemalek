@@ -142,13 +142,6 @@ namespace Cinemalek.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
-        //public async Task<IActionResult> Details ([FromRoute] int Id )
-        //{
-        //    var movie = await repository.GetAllAsync();
-        //    movie = movie.Where(m => m.Id == Id).FirstOrDefault();
-        //    return View  ( movie );
-        //}
         [HttpGet]
         public async Task<IActionResult> Edit([FromRoute] int id)
         {
@@ -175,25 +168,13 @@ namespace Cinemalek.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(MovieEditVM movieVM, IFormFile MainImg, List<IFormFile> SubImgs, List<int> actorsid)
         {
-            // جلب الفيلم من قاعدة البيانات مع tracked: true
-            var movieInDb = await repository.GetOneAsync(e => e.Id == movieVM.Movie.Id, tracked: true);
+            
+            var movieInDb = await repository.GetOneAsync(e => e.Id == movieVM.Movie.Id, tracked: false);
 
-            if (movieInDb is null)
-                return NotFound();
-
-            // تحديث بيانات الفيلم
-            movieInDb.Name = movieVM.Movie.Name;
-            movieInDb.CategoryId = movieVM.Movie.CategoryId;
-            movieInDb.CinemaId = movieVM.Movie.CinemaId;
-            movieInDb.Status = movieVM.Movie.Status;
-            movieInDb.Price = movieVM.Movie.Price;
-            movieInDb.Date = movieVM.Movie.Date;
-            movieInDb.Description = movieVM.Movie.Description;
-
-            // معالجة الصورة الرئيسية
+            
             if (MainImg is not null && MainImg.Length > 0)
             {
-                // حفظ الصورة الجديدة
+                
                 var newfilename = Guid.NewGuid().ToString() + DateTime.UtcNow.ToString("ddMMyyyy") + Path.GetExtension(MainImg.FileName);
                 var filepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Admin\\Imgs\\MoviesImg", newfilename);
 
@@ -202,7 +183,7 @@ namespace Cinemalek.Areas.Admin.Controllers
                     await MainImg.CopyToAsync(stream);
                 }
 
-                // حذف الصورة القديمة
+                
                 if (!string.IsNullOrEmpty(movieInDb.Img))
                 {
                     var oldfilepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Admin\\Imgs\\MoviesImg", movieInDb.Img);
@@ -212,15 +193,13 @@ namespace Cinemalek.Areas.Admin.Controllers
                     }
                 }
 
-                movieInDb.Img = newfilename;
+                movieVM.Movie.Img = newfilename;
             }
-            // لو مفيش صورة جديدة، بنحتفظ بالصورة القديمة (مش بنعمل حاجة)
-
-            // حفظ التغييرات
-            await repository.Commitasync();
+            
+            repository.Edit(movieVM.Movie);
 
             // تحديث الممثلين
-            if (actorsid != null)
+            if (actorsid is not null)
             {
                 // جلب الفيلم مع الممثلين
                 var movieWithActors = await repository.GetAllAsync(
@@ -335,14 +314,13 @@ namespace Cinemalek.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int Id)
         {
-            // جلب الفيلم مع Category, Cinema, وActorsMovies فقط
             var movies = await repository.GetAllAsync(
                 expression: m => m.Id == Id,
                 includes: new Expression<Func<Movie, object>>[]
                 {
-            m => m.Category,
-            m => m.Cinema,
-            m => m.ActorsMovies
+                    m => m.Category,
+                    m => m.Cinema,
+                    m => m.ActorsMovies
                 },
                 tracked: false
             );
@@ -350,7 +328,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             var movie = movies.FirstOrDefault();
             if (movie == null) return NotFound();
 
-            // جلب كل الممثلين المرتبطين
+            
             var actors = new List<Actor>();
             if (movie.ActorsMovies != null && movie.ActorsMovies.Any())
             {
@@ -358,7 +336,7 @@ namespace Cinemalek.Areas.Admin.Controllers
                 actors = (await actorRepository.GetAllAsync(a => actorIds.Contains(a.Id), tracked: false)).ToList();
             }
 
-            // SubImages لو محتاج
+            
             var subImgs = movie.SubImages?.ToList() ?? new List<MovieSubImg>();
 
             var movieVM = new MovieDetailsVM

@@ -3,11 +3,12 @@ namespace Cinemalek.Repository
 {
     public class Repositories <T> : IRepository<T> where T : class
     {
-        protected AppDbContext _context = new();
+        protected AppDbContext _context;
         protected DbSet<T> _DbSet;
-        public Repositories()
+        public Repositories(AppDbContext context)
         {
-            _DbSet =  _context.Set<T>();
+            _context = context;
+            _DbSet = _context.Set<T>();
         }
         // crud
         public async Task CreateAsync( T entity )
