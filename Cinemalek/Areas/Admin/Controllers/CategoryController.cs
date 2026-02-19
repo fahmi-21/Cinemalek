@@ -18,10 +18,8 @@ namespace Cinemalek.Areas.Admin.Controllers
         {
             var categories = await repository.GetAllAsync( tracked : false);
 
-            if (!string.IsNullOrWhiteSpace(name))
-                categories = categories
-                    .Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+            if ( name is not null)
+                categories = categories.Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
 
             if (status.HasValue)
                 categories = categories
@@ -43,8 +41,7 @@ namespace Cinemalek.Areas.Admin.Controllers
                 CurrentPage = page,
                 TotalPages = totalPages,
                 CategoryName = name,
-                Status = status,
-
+                Status = status
             });
         }
 
@@ -73,7 +70,10 @@ namespace Cinemalek.Areas.Admin.Controllers
                 return View(category);
             }
 
-            Response.Cookies.Append("success-notification" , "Category has been added successfuly");
+            //Response.Cookies.Append("success-notification" , "Category has been added successfuly");
+
+            
+
 
             await repository.CreateAsync(category);
             await repository.Commitasync();

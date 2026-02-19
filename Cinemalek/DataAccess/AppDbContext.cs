@@ -1,9 +1,11 @@
 ﻿using Cinemalek.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Cinemalek.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cinemalek.DataAccess
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Actor> Actors { get; set; }
         public DbSet<Movie> Movies { get; set; }
@@ -32,11 +34,12 @@ namespace Cinemalek.DataAccess
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(am => am.Actor)
-                    .WithMany(a => a.ActorsMovies)  // ✅ جمع
+                    .WithMany(a => a.ActorsMovies)  
                     .HasForeignKey(am => am.ActorId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
         }
+        public DbSet<Cinemalek.ViewModels.RegisterVM> RegisterVM { get; set; } = default!;
 
     }
 

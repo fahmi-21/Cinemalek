@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace Cinemalek
 {
     public class Program
@@ -15,6 +17,13 @@ namespace Cinemalek
                 }
                 
             );
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>( option =>
+            {
+                option.User.RequireUniqueEmail = true;
+                option.Password.RequiredLength = 8;
+            })
+                .AddEntityFrameworkStores<AppDbContext>();
+
             builder.Services.AddScoped(typeof(IRepository<Category>), typeof(Repositories<Category>));
             builder.Services.AddScoped(typeof(IRepository<Actor>), typeof(Repositories<Actor>));
             builder.Services.AddScoped(typeof(IRepository<Cinema>), typeof(Repositories<Cinema>));

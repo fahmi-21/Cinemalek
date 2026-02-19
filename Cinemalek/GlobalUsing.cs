@@ -13,5 +13,11 @@ global using System.Linq.Expressions;
 global using Cinemalek.Repository;
 global using System.Threading.Tasks;
 global using System;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Authentication;
+global using System.Security.Claims;
+global using Mapster;
 
 

@@ -198,21 +198,19 @@ namespace Cinemalek.Areas.Admin.Controllers
             
             repository.Edit(movieVM.Movie);
 
-            // تحديث الممثلين
+           
             if (actorsid is not null)
             {
-                // جلب الفيلم مع الممثلين
-                var movieWithActors = await repository.GetAllAsync(
-                    expression: m => m.Id == movieVM.Movie.Id,
-                    includes: new Expression<Func<Movie, object>>[] { m => m.ActorsMovies },
+                
+                var movieWithActors = await repository.GetAllAsync(m => m.Id == movieVM.Movie.Id, includes: new Expression<Func<Movie, object>>[] { m => m.ActorsMovies },
                     tracked: true
                 );
 
                 var movie = movieWithActors?.FirstOrDefault();
-                if (movie != null)
+                if (movie is not null)
                 {
-                    // مسح الممثلين القدامى
-                    if (movie.ActorsMovies != null)
+                    
+                    if (movie.ActorsMovies is not null)
                     {
                         movie.ActorsMovies.Clear();
                     }
@@ -221,7 +219,7 @@ namespace Cinemalek.Areas.Admin.Controllers
                         movie.ActorsMovies = new List<ActorMovie>();
                     }
 
-                    // إضافة الممثلين الجدد
+                  
                     foreach (var actorId in actorsid)
                     {
                         movie.ActorsMovies.Add(new ActorMovie
@@ -235,13 +233,10 @@ namespace Cinemalek.Areas.Admin.Controllers
                 }
             }
 
-            // معالجة الصور الفرعية
-            if (SubImgs != null && SubImgs.Any(s => s != null && s.Length > 0))
+            if (SubImgs is not null && SubImgs.Any(s => s is not null && s.Length > 0))
             {
-                // جلب الصور الفرعية القديمة
                 var movieOldsubimgs = await subImgRepository.GetAllAsync(e => e.MovieId == movieVM.Movie.Id);
 
-                // إضافة الصور الجديدة
                 foreach (var Img in SubImgs.Where(s => s != null && s.Length > 0))
                 {
                     var newfilename = Guid.NewGuid().ToString() + DateTime.UtcNow.ToString("ddMMyyyy") + Path.GetExtension(Img.FileName);
@@ -259,7 +254,6 @@ namespace Cinemalek.Areas.Admin.Controllers
                     });
                 }
 
-                // حذف الصور القديمة من الملفات
                 foreach (var item in movieOldsubimgs)
                 {
                     if (!string.IsNullOrEmpty(item?.Img))
@@ -272,11 +266,10 @@ namespace Cinemalek.Areas.Admin.Controllers
                     }
                 }
 
-                // حذف الصور القديمة من قاعدة البيانات
-                if (movieOldsubimgs != null && movieOldsubimgs.Any())
+                if (movieOldsubimgs is not null && movieOldsubimgs.Any())
                 {
                     subImgRepository.DeleteRange(movieOldsubimgs);
-                    await subImgRepository.Commitasync(); // استخدم Commitasync تبع الـ subImgRepository
+                    await subImgRepository.Commitasync(); 
                 }
             }
 
