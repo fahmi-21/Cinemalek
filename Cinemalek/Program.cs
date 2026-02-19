@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Cinemalek
 {
@@ -22,13 +23,16 @@ namespace Cinemalek
                 option.User.RequireUniqueEmail = true;
                 option.Password.RequiredLength = 8;
             })
-                .AddEntityFrameworkStores<AppDbContext>();
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             builder.Services.AddScoped(typeof(IRepository<Category>), typeof(Repositories<Category>));
             builder.Services.AddScoped(typeof(IRepository<Actor>), typeof(Repositories<Actor>));
             builder.Services.AddScoped(typeof(IRepository<Cinema>), typeof(Repositories<Cinema>));
             builder.Services.AddScoped(typeof(IRepository<Movie>), typeof(Repositories<Movie>));
             builder.Services.AddScoped(typeof(IMovieSubImgsREpository), typeof(MovieSubImgsRepository));
+
+            builder.Services.AddTransient<IEmailSender , EmailSender>();
 
             var app = builder.Build();
 

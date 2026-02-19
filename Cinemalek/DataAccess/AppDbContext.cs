@@ -40,6 +40,7 @@ namespace Cinemalek.DataAccess
             });
         }
         public DbSet<Cinemalek.ViewModels.RegisterVM> RegisterVM { get; set; } = default!;
+        public DbSet<Cinemalek.ViewModels.LoginVM> LoginVM { get; set; } = default!;
 
     }
 
