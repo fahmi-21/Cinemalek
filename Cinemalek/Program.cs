@@ -21,7 +21,10 @@ namespace Cinemalek
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>( option =>
             {
                 option.User.RequireUniqueEmail = true;
+                option.SignIn.RequireConfirmedEmail = true;
                 option.Password.RequiredLength = 8;
+                option.Lockout.MaxFailedAccessAttempts = 5;
+                option.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
             })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
@@ -31,8 +34,11 @@ namespace Cinemalek
             builder.Services.AddScoped(typeof(IRepository<Cinema>), typeof(Repositories<Cinema>));
             builder.Services.AddScoped(typeof(IRepository<Movie>), typeof(Repositories<Movie>));
             builder.Services.AddScoped(typeof(IMovieSubImgsREpository), typeof(MovieSubImgsRepository));
+            builder.Services.AddScoped(typeof(IRepository<ApplicationUserOTP>), typeof(Repositories<ApplicationUserOTP>));
+            
 
             builder.Services.AddTransient<IEmailSender , EmailSender>();
+            builder.Services.AddScoped<IAccountServices, AccountServices>();
 
             var app = builder.Build();
 

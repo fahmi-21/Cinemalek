@@ -13,6 +13,7 @@ namespace Cinemalek.DataAccess
         public DbSet<Category> Categories { get; set; }
         public DbSet<MovieSubImg> MovieSubImgs { get; set; }
         public DbSet<ActorMovie> ActorsMovies { get; set; }
+        public DbSet<ApplicationUserOTP> ApplicationUserOTPs { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -38,10 +39,24 @@ namespace Cinemalek.DataAccess
                     .HasForeignKey(am => am.ActorId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
-        }
-        public DbSet<Cinemalek.ViewModels.RegisterVM> RegisterVM { get; set; } = default!;
-        public DbSet<Cinemalek.ViewModels.LoginVM> LoginVM { get; set; } = default!;
 
+            modelBuilder.Entity<ApplicationUserOTP>(entity =>
+            {
+                entity.ToTable("ApplicationUserOTPs");
+
+
+                entity.HasOne(o => o.ApplicationUser)
+                .WithMany(u => u.OTPs)
+                .HasForeignKey(o => o.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasKey(e => e.Id);
+
+
+            });
+
+         
+        }
     }
 
 }

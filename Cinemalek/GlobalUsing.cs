@@ -19,5 +19,7 @@ global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Authentication;
 global using System.Security.Claims;
 global using Mapster;
-
+global using Microsoft.AspNetCore.Identity.UI.Services;
+global using Cinemalek.Services;
+global using Cinemalek.Services.IServices;
 

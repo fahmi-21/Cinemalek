@@ -8,5 +8,6 @@ namespace Cinemalek.Models
         public string FName { get; set; } = string.Empty;
         public string LName { get; set; } = string.Empty;   
         public string? Address { get; set; }
+        public ICollection<ApplicationUserOTP> OTPs { get; set; } = new List<ApplicationUserOTP>();
     }
 }

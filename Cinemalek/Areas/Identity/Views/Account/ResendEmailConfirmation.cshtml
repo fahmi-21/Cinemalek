@@ -1,0 +1,41 @@
+﻿@model Cinemalek.ViewModels.ResendEmailConfirmationVM
+
+@{
+    ViewData["Title"] = "ResendEmailConfirmation";
+}
+
+<div class="col-lg-8 col-xxl-5 py-3 position-relative">
+    <div class="card overflow-hidden z-index-1">
+        <div class="card-body p-4">
+            <h3 class="mb-3">Resend Email Confirmation</h3>
+
+            <form asp-action="ResendEmailConfirmation"
+                  asp-controller="Account"
+                  asp-area="Identity"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="EmailOrUserName" class="form-label"></label>
+                    <input asp-for="EmailOrUserName" class="form-control" />
+                    <span asp-validation-for="EmailOrUserName" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary d-block w-100 mt-3">
+                        Resend Confirmation Email
+                    </button>
+                </div>
+                <div>
+                    <a asp-action="Login">Back to LogIn</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

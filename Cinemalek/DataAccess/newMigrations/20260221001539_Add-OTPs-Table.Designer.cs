@@ -4,16 +4,19 @@ using Cinemalek.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Cinemalek.Migrations
+namespace Cinemalek.DataAccess.newMigrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260221001539_Add-OTPs-Table")]
+    partial class AddOTPsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -173,7 +176,7 @@ namespace Cinemalek.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("ApplicationUserOTPs", (string)null);
+                    b.ToTable("ApplicationUserOTPs");
                 });
 
             modelBuilder.Entity("Cinemalek.Models.Category", b =>
@@ -457,7 +460,7 @@ namespace Cinemalek.Migrations
             modelBuilder.Entity("Cinemalek.Models.ApplicationUserOTP", b =>
                 {
                     b.HasOne("Cinemalek.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany("OTPs")
+                        .WithMany()
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -549,11 +552,6 @@ namespace Cinemalek.Migrations
             modelBuilder.Entity("Cinemalek.Models.Actor", b =>
                 {
                     b.Navigation("ActorsMovies");
-                });
-
-            modelBuilder.Entity("Cinemalek.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("OTPs");
                 });
 
             modelBuilder.Entity("Cinemalek.Models.Cinema", b =>
