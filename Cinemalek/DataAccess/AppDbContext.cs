@@ -57,6 +57,8 @@ namespace Cinemalek.DataAccess
 
          
         }
+        public DbSet<Cinemalek.ViewModels.ValidateOTPVM> ValidateOTPVM { get; set; } = default!;
+        public DbSet<Cinemalek.ViewModels.ResetPasswordVM> ResetPasswordVM { get; set; } = default!;
     }
 
 }

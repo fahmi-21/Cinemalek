@@ -17,8 +17,8 @@ namespace Cinemalek.Areas.Identity.Controllers
         private readonly IAccountServices _accountservices;
         private readonly IRepository<ApplicationUserOTP> _applicationUserOTPRepo;
 
-        public AccountController(UserManager<ApplicationUser> userManager , SignInManager<ApplicationUser> signinmangar , IEmailSender emailSender
-            ,IAccountServices accountServices , IRepository<ApplicationUserOTP> applicationUserOTPRepo )
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signinmangar, IEmailSender emailSender
+            , IAccountServices accountServices, IRepository<ApplicationUserOTP> applicationUserOTPRepo)
         {
             _userManager = userManager;
             _signinManager = signinmangar;
@@ -66,14 +66,14 @@ namespace Cinemalek.Areas.Identity.Controllers
                 new { area = "Identity", token, Id = applicationUser.Id },
                 Request.Scheme);
 
-            await _accountservices.SendEmailAsync( EmailType.Confirmation, $"<h1>Click <a href='{confirmationLink}'>here</a> to cofirm youyr account</h1>", applicationUser);
+            await _accountservices.SendEmailAsync(EmailType.Confirmation, $"<h1>Click <a href='{confirmationLink}'>here</a> to cofirm youyr account</h1>", applicationUser);
 
             TempData["success-notification"] = "Account has been added successfuly";
 
             return Redirect(nameof(Login));
         }
 
-        public async Task<IActionResult> ConfirmEmail( string Id, string token)
+        public async Task<IActionResult> ConfirmEmail(string Id, string token)
         {
             var user = await _userManager.FindByIdAsync(Id);
             if (user is null) return NotFound();
@@ -83,11 +83,11 @@ namespace Cinemalek.Areas.Identity.Controllers
             if (!result.Succeeded)
             {
                 foreach (var item in result.Errors)
-                    ModelState.AddModelError(String.Empty , item.Description );
+                    ModelState.AddModelError(String.Empty, item.Description);
 
                 TempData["error-notification"] = $"invalid confirmation link please tryv again";
 
-                
+
                 //return View( "Index", "Home" , new {area = "Customer"});
             }
             else
@@ -96,18 +96,18 @@ namespace Cinemalek.Areas.Identity.Controllers
             return RedirectToAction(nameof(Login));
         }
 
-        [HttpGet] 
+        [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Login( LoginVM loginvm)
+        public async Task<IActionResult> Login(LoginVM loginvm)
         {
             if (!ModelState.IsValid)
                 return View(loginvm);
 
-            var user =  await _userManager.FindByEmailAsync(loginvm.EmailOrUserName)??
+            var user = await _userManager.FindByEmailAsync(loginvm.EmailOrUserName) ??
                      await _userManager.FindByNameAsync(loginvm.EmailOrUserName);
 
             //bool isvalid = true;
@@ -120,7 +120,7 @@ namespace Cinemalek.Areas.Identity.Controllers
             }
 
             //isvalid = await _userManager.CheckPasswordAsync(user , loginvm.Password);
-            var result = await _signinManager.PasswordSignInAsync(user, loginvm.Password ,  loginvm.RememberMe  ,true);
+            var result = await _signinManager.PasswordSignInAsync(user, loginvm.Password, loginvm.RememberMe, true);
 
             if (result.Succeeded)
             {
@@ -141,17 +141,17 @@ namespace Cinemalek.Areas.Identity.Controllers
             }
             TempData["success-notification"] = $"Welcome Back {user.UserName}";
 
-            return RedirectToAction( nameof (Register));
+            return RedirectToAction(nameof(Register));
             //return View( "Index", "Home" , new {area = "Customer"});
         }
         [HttpGet]
-        public async Task<IActionResult> ForgetPassword( )
+        public async Task<IActionResult> ForgetPassword()
         {
             var user = new ForgetPasswordVM();
             return View(user);
         }
         [HttpPost]
-        public async Task<IActionResult> ForgetPassword( ForgetPasswordVM forgetPasswordVM)
+        public async Task<IActionResult> ForgetPassword(ForgetPasswordVM forgetPasswordVM)
         {
             if (!ModelState.IsValid)
                 return View(forgetPasswordVM);
@@ -159,23 +159,27 @@ namespace Cinemalek.Areas.Identity.Controllers
             var user = await _userManager.FindByEmailAsync(forgetPasswordVM.EmailOrUserName) ??
                      await _userManager.FindByNameAsync(forgetPasswordVM.EmailOrUserName);
 
-            var usertobscount =(await _applicationUserOTPRepo.GetAllAsync( e =>(DateTime.UtcNow 
-            - e.CreateAt).TotalHours > 24)).Count();
+            var usertobscount = (await _applicationUserOTPRepo.GetAllAsync(e => e.ApplicationUserId == user.Id
+            && e.CreateAt >= DateTime.UtcNow.AddHours(-24))).Count();
+            if (!user.EmailConfirmed)
+            {
+                return RedirectToAction("ResendEmailConfirmation", "Account", new { area = "Identity" });
 
-            if (user is not null && usertobscount <= 3)
+            }
+            else if (user is not null && usertobscount <= 3)
             {
                 string otp = Random.Shared.Next(100000, 999999).ToString();
                 string msg = $"<h1> Your OTB Is:  {otp}  Dont Share It.</h1>";
-                await _accountservices.SendEmailAsync(EmailType.CorgetPassword,msg, user);
+                await _accountservices.SendEmailAsync(EmailType.CorgetPassword, msg, user);
 
                 var otpuser = new ApplicationUserOTP
                 {
                     ApplicationUserId = user.Id,
                     OTP = otp
                 };
-          
 
-                await _applicationUserOTPRepo.CreateAsync( otpuser );
+
+                await _applicationUserOTPRepo.CreateAsync(otpuser);
                 await _applicationUserOTPRepo.Commitasync();
                 TempData["success-notification"] = "OTB Has Been sended Successfuly , If Account Is Exist ";
             }
@@ -185,9 +189,9 @@ namespace Cinemalek.Areas.Identity.Controllers
                 return RedirectToAction("LogIn", "Account", new { area = "Identity" });
             }
 
-            
 
-            return RedirectToAction("LogIn", "Account", new { area = "Identity" });
+
+            return RedirectToAction("ValidateOTP", "Account", new { area = "Identity", applicationUserId = user.Id });
         }
 
         [HttpGet]
@@ -208,7 +212,7 @@ namespace Cinemalek.Areas.Identity.Controllers
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-                var confirmationLink = Url.Action("ConfirmEmail","Account",
+                var confirmationLink = Url.Action("ConfirmEmail", "Account",
                     new { area = "Identity", token, Id = user.Id },
                     Request.Scheme);
 
@@ -217,6 +221,67 @@ namespace Cinemalek.Areas.Identity.Controllers
 
             TempData["success-notification"] = "Email Has Been Resended Successfuly , If Account Is Exist and Not Confirmed";
 
+            return RedirectToAction("LogIn", "Account", new { area = "Identity" });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ValidateOTP(string applicationUserId)
+        {
+            return View(new ValidateOTPVM
+            {
+                ApplicationUserId = applicationUserId
+            });
+        }
+        [HttpPost]
+        public async Task<IActionResult> ValidateOTP(ValidateOTPVM validateOTPVM)
+        {
+            if (!ModelState.IsValid)
+                return View(validateOTPVM);
+            var user = await _userManager.FindByIdAsync(validateOTPVM.ApplicationUserId);
+            if (user is null) return NotFound();
+
+            var otp = (await _applicationUserOTPRepo.GetAllAsync()).Where(e => e.ApplicationUserId == user.Id && e.IsValid).OrderBy(e => e.Id).LastOrDefault();
+
+
+
+            if (otp is null)
+            {
+                TempData["error-notification"] = "Invalid OTP , Please Try Again";
+                return View(validateOTPVM);
+            }
+
+
+            otp.IsUsed = true;
+            
+            return RedirectToAction("ResetPassword", "Account", new { area = "Identity", applicationUserId = user.Id });
+        }
+        [HttpGet]
+        public IActionResult ResetPassword(string applicationUserId)
+        {
+            return View(new ResetPasswordVM
+            {
+                ApplicationUserId = applicationUserId
+
+            });
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordVM resetPasswordVM)
+        {
+            if (!ModelState.IsValid)
+                return View(resetPasswordVM);
+
+            var user = await _userManager.FindByIdAsync(resetPasswordVM.ApplicationUserId);
+            if (user is null) return NotFound();
+
+            var usertoken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, usertoken, resetPasswordVM.Password);
+
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("Password", String.Join("," , result.Errors.Select( e=>e.Description)));
+                return View(resetPasswordVM);
+            }
+            TempData["success-notification"] = "Password Has Been Reseted Successfuly";
             return RedirectToAction("LogIn", "Account", new { area = "Identity" });
         }
     }

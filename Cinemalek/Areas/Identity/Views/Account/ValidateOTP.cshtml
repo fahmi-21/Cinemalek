@@ -1,0 +1,39 @@
+﻿@model Cinemalek.ViewModels.ValidateOTPVM
+
+@{
+    ViewData["Title"] = "ValidateOTP";
+}
+
+
+
+<div class="col-lg-8 col-xxl-5 py-3 position-relative">
+    <div class="card overflow-hidden z-index-1">
+        <div class="card-body p-4">
+            <h3 class="mb-3">ValidateOTP</h3>
+            <hr />
+            <form asp-controller="Account" asp-area="Identity" asp-action="ValidateOTP" method="post">
+                <input type="hidden" asp-for="ApplicationUserId" class="form-control" />
+
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.Id)
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="OTP" class="control-label"></label>
+                    <input asp-for="OTP" class="form-control" />
+                    <span asp-validation-for="OTP" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                </div>
+                <div class="mb-3">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
