@@ -281,8 +281,9 @@ namespace Cinemalek.Areas.Identity.Controllers
                 ModelState.AddModelError("Password", String.Join("," , result.Errors.Select( e=>e.Description)));
                 return View(resetPasswordVM);
             }
+
             TempData["success-notification"] = "Password Has Been Reseted Successfuly";
-            return RedirectToAction("LogIn", "Account", new { area = "Identity" });
+            return RedirectToAction("Login", "Account", new { area = "Identity" });
         }
     }
 }
