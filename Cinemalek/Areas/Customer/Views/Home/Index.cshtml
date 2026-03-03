@@ -1,8 +1,97 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model HomeVM
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Welcome to Cinemalek! 🍿</h1>
+        <a asp-controller="Movies" asp-action="Index" class="btn btn-primary">
+            Browse All Movies
+        </a>
+    </div>
+    <!-- ===== Categories Section ===== -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mt-5 mb-3">🏷 Categories</h2>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var category in Model.Categories.Where(c => c.Status))
+            {
+                <span class="badge bg-primary p-2">
+                    @category.Name
+                </span>
+            }
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <!-- ===== Movies Section ===== -->
+    <h2 class="mb-3">🎬 Now Showing</h2>
+    <div class="row">
+        @foreach (var movie in Model.Movies)
+        {
+            <div class="col-md-3 mb-4">
+                @foreach ( var item in Model.Movies)
+                {
+                    <div class="card h-100 shadow-sm">
+                    
+                        <img src="~/Admin/Imgs/MoviesImg/@item.Img"
+                             class="card-img-top"
+                             style="height:250px; object-fit:cover;" />
+
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="text-muted">@item.Price.ToString("c")</p>
+                        </div>
+
+                        <div class="card-footer bg-white border-0">
+                            <a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary w-100"> View Details</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <hr class="my-4" />
+
+    <!-- ===== Actors Section ===== -->
+    <h2 class="mt-5 mb-3">🎭 Popular Actors</h2>
+    <div class="row">
+        @foreach (var actor in Model.Actors)
+        {
+            <div class="col-md-2 text-center mb-4">
+                <img src="~/Admin/Imgs/ActorsImg/@actor.Img"
+                     class="rounded-circle shadow"
+                     width="120" height="120"
+                     style="object-fit:cover;" />
+                <h6 class="mt-2">@actor.Name</h6>
+            </div>
+        }
+    </div>
+
+    <hr class="my-4" />
+
+    <!-- ===== Cinemas Section ===== -->
+    <h2 class="mt-5 mb-3">🎥 Cinemas</h2>
+    <div class="row">
+        @foreach (var cinema in Model.Cinemas)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm">
+                    <img src="~/Admin/Imgs/CinemasImg/@cinema.Img"
+                         class="card-img-top"
+                         style="height:200px; object-fit:cover;" />
+                    <div class="card-body">
+                        <h5>@cinema.Name</h5>
+                        <p class="text-muted">@cinema.Location</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    
+
 </div>

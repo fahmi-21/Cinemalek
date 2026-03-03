@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 namespace Cinemalek.Areas.Admin.Controllers
 {
     [Area(SD.ADMIN_AREA)]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.EMPLOYEE_ROLE},{SD.ADMIN_ROLE}")]
     public class CinemaController : Controller
     {
        
@@ -42,12 +43,15 @@ namespace Cinemalek.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public IActionResult Create ()
         {
             return View( new Cinema());
         }
         
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
+
         public async Task<IActionResult> Create(Cinema cinema, IFormFile Img)
         {
 
@@ -85,6 +89,7 @@ namespace Cinemalek.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
 
         public async Task <IActionResult> Delete ([FromRoute] int Id)
         {
@@ -98,6 +103,8 @@ namespace Cinemalek.Areas.Admin.Controllers
             return RedirectToAction(nameof (Index));
 
         }
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
+
         public async Task<IActionResult> Details ( [FromRoute] int Id ) 
         {
             var cinema = await repository.GetOneAsync(e => e.Id == Id);
@@ -109,6 +116,8 @@ namespace Cinemalek.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
+
         public async Task<IActionResult> Edit ([FromRoute] int Id)
         {
             var cinema = await repository.GetOneAsync(e => e.Id == Id);
@@ -121,6 +130,8 @@ namespace Cinemalek.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
+
         public async Task<IActionResult> Edit(Cinema cinema, IFormFile? Img)
         {
             

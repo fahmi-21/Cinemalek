@@ -176,6 +176,36 @@ namespace Cinemalek.Migrations
                     b.ToTable("ApplicationUserOTPs", (string)null);
                 });
 
+            modelBuilder.Entity("Cinemalek.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ListPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("MovieId");
+
+                    b.ToTable("Carts");
+                });
+
             modelBuilder.Entity("Cinemalek.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -463,6 +493,25 @@ namespace Cinemalek.Migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("Cinemalek.Models.Cart", b =>
+                {
+                    b.HasOne("Cinemalek.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Cinemalek.Models.Movie", "Movie")
+                        .WithMany()
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Movie");
                 });
 
             modelBuilder.Entity("Cinemalek.Models.Movie", b =>

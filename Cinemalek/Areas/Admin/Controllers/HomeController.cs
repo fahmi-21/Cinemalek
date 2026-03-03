@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+
 namespace Cinemalek.Areas.Admin.Controllers
 {
     [Area(SD.ADMIN_AREA)]
+    [Authorize ( Roles =$"{ SD.SUPER_ADMIN_ROLE} , {SD.EMPLOYEE_ROLE}, {SD.ADMIN_ROLE}")]
     public class HomeController : Controller
     {
         AppDbContext _context;

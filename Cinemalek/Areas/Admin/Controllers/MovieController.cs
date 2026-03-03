@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace Cinemalek.Areas.Admin.Controllers
 {
     [Area(SD.ADMIN_AREA)]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.EMPLOYEE_ROLE},{SD.ADMIN_ROLE}")]
     public class MovieController : Controller
     {
         private IRepository<Movie> repository;
@@ -81,6 +82,7 @@ namespace Cinemalek.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public IActionResult Create()
         {
             var movieVM = new MovieCreateVM
@@ -93,6 +95,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             return View(movieVM);
         }
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Create(MovieCreateVM movieVM, IFormFile MainImg, List<IFormFile> SubImgs, List<int> actorsid)
         {
 
@@ -143,6 +146,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit([FromRoute] int id)
         {
             var movie = await repository.GetOneAsync(e => e.Id == id);
@@ -166,6 +170,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             return View(movieVM);
         }
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(MovieEditVM movieVM, IFormFile MainImg, List<IFormFile> SubImgs, List<int> actorsid)
         {
             
@@ -275,6 +280,7 @@ namespace Cinemalek.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Delete([FromRoute] int Id)
         {
             var movie = await repository.GetOneAsync(m => m.Id == Id);
@@ -305,6 +311,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Details(int Id)
         {
             var movies = await repository.GetAllAsync(

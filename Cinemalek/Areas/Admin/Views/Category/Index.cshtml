@@ -63,7 +63,6 @@
                         <th>#</th>
                         <th>Name</th>
                         <th>Status</th>
-                        <th>Movies</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -78,12 +77,9 @@
                                     @(item.Status ? "Available" : "Not Available")
                                 </span>
                             </td>
-                            @* <td>
-                                @(Model.MoviesCount.ContainsKey(item.Id)
-                                    ? Model.MoviesCount[item.Id]
-                                    : 0)
-                            </td> *@
-                            <td>
+                            @if ( User.IsInRole(SD.ADMIN_ROLE) || User.IsInRole(SD.SUPER_ADMIN_ROLE) )
+                            { 
+                              <td>
                                 <a asp-area="Admin" asp-controller="Category"
                                    asp-action="Edite" asp-route-id="@item.Id"
                                    class="btn btn-sm btn-warning">
@@ -96,6 +92,13 @@
                                     <i class="fa-solid fa-trash"></i>
                                 </a>
                             </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    No Actions!!
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>

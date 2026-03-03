@@ -17,6 +17,8 @@
         public DateTime Date { get; set; }
         [Required]
         public bool Status { get; set; }
+        //[Required]
+        //public int Quantity { get; set; } = 0;
         [Required]
         public int CategoryId { get; set; }
         public Category? Category { get; set; }

@@ -8,8 +8,8 @@ namespace Cinemalek.Repository
          void Edit(T entity);
          void Delete(T entity);
          Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? expression = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true);
-         Task<T?> GetOneAsync(Expression<Func<T, bool>>? expression, bool tracked = true);
-         Task<int> Commitasync();
+        Task<T?> GetOneAsync(Expression<Func<T, bool>>? expression,Expression<Func<T, object>>[]? includes = null, bool tracked = true );
+        Task<int> Commitasync();
          Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
 
     }

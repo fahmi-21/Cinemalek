@@ -14,6 +14,7 @@ namespace Cinemalek.DataAccess
         public DbSet<MovieSubImg> MovieSubImgs { get; set; }
         public DbSet<ActorMovie> ActorsMovies { get; set; }
         public DbSet<ApplicationUserOTP> ApplicationUserOTPs { get; set; }
+        public DbSet<Cart> Carts { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -57,8 +58,6 @@ namespace Cinemalek.DataAccess
 
          
         }
-        public DbSet<Cinemalek.ViewModels.ValidateOTPVM> ValidateOTPVM { get; set; } = default!;
-        public DbSet<Cinemalek.ViewModels.ResetPasswordVM> ResetPasswordVM { get; set; } = default!;
     }
 
 }

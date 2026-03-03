@@ -37,7 +37,7 @@ namespace Cinemalek.Areas.Identity.Controllers
             if (!ModelState.IsValid)
                 return View(registerVM);
 
-            ApplicationUser applicationUser = new ApplicationUser()
+            ApplicationUser user = new()
             {
                 FName = registerVM.FName,
                 LName = registerVM.LName,
@@ -47,7 +47,7 @@ namespace Cinemalek.Areas.Identity.Controllers
             //var applicationuser = registerVM.Adapt<ApplicationUser>();
             //applicationuser.Id = Guid.NewGuid().ToString();
 
-            var result = await _userManager.CreateAsync(applicationUser, registerVM.Password);
+            var result = await _userManager.CreateAsync(user, registerVM.Password);
 
             if (!result.Succeeded)
             {
@@ -58,15 +58,19 @@ namespace Cinemalek.Areas.Identity.Controllers
             }
 
 
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(applicationUser);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
             var confirmationLink = Url
                 .Action("ConfirmEmail",
                 "Account",
-                new { area = "Identity", token, Id = applicationUser.Id },
+                new { area = "Identity", token, Id = user.Id },
                 Request.Scheme);
 
-            await _accountservices.SendEmailAsync(EmailType.Confirmation, $"<h1>Click <a href='{confirmationLink}'>here</a> to cofirm youyr account</h1>", applicationUser);
+            await _accountservices.SendEmailAsync(EmailType.Confirmation,
+                $"<h1>Click <a href='{confirmationLink}'>here</a> to cofirm youyr account</h1>", user);
+
+            await _userManager.AddToRoleAsync(user, SD.CUSTOMER_ROLE);
+
 
             TempData["success-notification"] = "Account has been added successfuly";
 
@@ -93,7 +97,7 @@ namespace Cinemalek.Areas.Identity.Controllers
             else
                 TempData["success-notification"] = $"account has been confirmed successfuly";
 
-            return RedirectToAction(nameof(Login));
+            return RedirectToAction("index", "Home", new { area = "Customer" });
         }
 
         [HttpGet]
@@ -102,6 +106,7 @@ namespace Cinemalek.Areas.Identity.Controllers
             return View();
         }
         [HttpPost]
+  
         public async Task<IActionResult> Login(LoginVM loginvm)
         {
             if (!ModelState.IsValid)
@@ -122,7 +127,7 @@ namespace Cinemalek.Areas.Identity.Controllers
             //isvalid = await _userManager.CheckPasswordAsync(user , loginvm.Password);
             var result = await _signinManager.PasswordSignInAsync(user, loginvm.Password, loginvm.RememberMe, true);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
                 if (result.IsNotAllowed)
                 {
@@ -141,8 +146,8 @@ namespace Cinemalek.Areas.Identity.Controllers
             }
             TempData["success-notification"] = $"Welcome Back {user.UserName}";
 
-            return RedirectToAction(nameof(Register));
-            //return View( "Index", "Home" , new {area = "Customer"});
+
+            return RedirectToAction("Index", "Home", new { area = "Customer" });
         }
         [HttpGet]
         public async Task<IActionResult> ForgetPassword()
@@ -252,7 +257,7 @@ namespace Cinemalek.Areas.Identity.Controllers
 
 
             otp.IsUsed = true;
-            
+
             return RedirectToAction("ResetPassword", "Account", new { area = "Identity", applicationUserId = user.Id });
         }
         [HttpGet]
@@ -278,11 +283,18 @@ namespace Cinemalek.Areas.Identity.Controllers
 
             if (!result.Succeeded)
             {
-                ModelState.AddModelError("Password", String.Join("," , result.Errors.Select( e=>e.Description)));
+                ModelState.AddModelError("Password", String.Join(",", result.Errors.Select(e => e.Description)));
                 return View(resetPasswordVM);
             }
 
             TempData["success-notification"] = "Password Has Been Reseted Successfuly";
+            return RedirectToAction("Login", "Account", new { area = "Identity" });
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await _signinManager.SignOutAsync();
+            TempData["success-notification"] = "You Have Been Logged Out Successfuly";
             return RedirectToAction("Login", "Account", new { area = "Identity" });
         }
     }

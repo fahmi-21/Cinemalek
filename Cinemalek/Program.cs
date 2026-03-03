@@ -1,3 +1,4 @@
+using Cinemalek.Conventions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
@@ -10,7 +11,11 @@ namespace Cinemalek
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews( options =>
+            {
+                options.Conventions.Add(new AuthorizeAreaConvention("Admin" ,
+                    $"{SD.ADMIN_ROLE},{SD.SUPER_ADMIN_ROLE}"));
+            });
             builder.Services.AddDbContext<AppDbContext>( 
                 options =>
                 {
@@ -28,17 +33,28 @@ namespace Cinemalek
             })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Identity/Account/Login";
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+            });
 
             builder.Services.AddScoped(typeof(IRepository<Category>), typeof(Repositories<Category>));
             builder.Services.AddScoped(typeof(IRepository<Actor>), typeof(Repositories<Actor>));
             builder.Services.AddScoped(typeof(IRepository<Cinema>), typeof(Repositories<Cinema>));
             builder.Services.AddScoped(typeof(IRepository<Movie>), typeof(Repositories<Movie>));
+            builder.Services.AddScoped(typeof(IRepository<Cart>), typeof(Repositories<Cart>));
+            builder.Services.AddScoped(typeof(IRepository<MovieSubImg>), typeof(Repositories<MovieSubImg>));
             builder.Services.AddScoped(typeof(IMovieSubImgsREpository), typeof(MovieSubImgsRepository));
             builder.Services.AddScoped(typeof(IRepository<ApplicationUserOTP>), typeof(Repositories<ApplicationUserOTP>));
-            
+            builder.Services.AddScoped(typeof(IDBInitilizer), typeof(DBInitilizer));
+
 
             builder.Services.AddTransient<IEmailSender , EmailSender>();
             builder.Services.AddScoped<IAccountServices, AccountServices>();
+
+
+            
 
             var app = builder.Build();
 
@@ -54,6 +70,10 @@ namespace Cinemalek
             app.UseRouting();
 
             app.UseAuthorization();
+
+            var scope = app.Services.CreateScope();
+            var service = scope.ServiceProvider.GetService<IDBInitilizer>();
+            service.Initialize();
 
             app.MapStaticAssets();
             app.MapControllerRoute(

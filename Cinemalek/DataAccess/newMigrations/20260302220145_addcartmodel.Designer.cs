@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cinemalek.DataAccess.newMigrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260221024419_FixUserOtpRelation")]
-    partial class FixUserOtpRelation
+    [Migration("20260302220145_addcartmodel")]
+    partial class addcartmodel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -177,6 +177,36 @@ namespace Cinemalek.DataAccess.newMigrations
                     b.HasIndex("ApplicationUserId");
 
                     b.ToTable("ApplicationUserOTPs", (string)null);
+                });
+
+            modelBuilder.Entity("Cinemalek.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ListPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("MovieId");
+
+                    b.ToTable("Carts");
                 });
 
             modelBuilder.Entity("Cinemalek.Models.Category", b =>
@@ -466,6 +496,25 @@ namespace Cinemalek.DataAccess.newMigrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("Cinemalek.Models.Cart", b =>
+                {
+                    b.HasOne("Cinemalek.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Cinemalek.Models.Movie", "Movie")
+                        .WithMany()
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Movie");
                 });
 
             modelBuilder.Entity("Cinemalek.Models.Movie", b =>

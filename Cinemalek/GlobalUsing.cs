@@ -22,4 +22,6 @@ global using Mapster;
 global using Microsoft.AspNetCore.Identity.UI.Services;
 global using Cinemalek.Services;
 global using Cinemalek.Services.IServices;
+global using Cinemalek.Utilities.DBInitilization;
+
 

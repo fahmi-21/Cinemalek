@@ -119,11 +119,20 @@
                             {
                                 <td><span class="badge text-bg-danger">Not Available</span></td>
                             }
-                            <td >
-                                <a href="/Admin/Movie/Details/@item.Id" class="btn btn-info btn-sm" title="View Details"><i class="fa-solid fa-eye"></i></a>
-                                <a href="/Admin/Movie/Edit/@item.Id" class="btn btn-sm btn-warning btn-edit"><i class="fa-solid fa-pen"></i></a>
-                                <a href="/Admin/Movie/Delete/@item.Id" class="btn btn-sm btn-danger btn-delete"><i class="fa-solid fa-trash"></i></a>
-                            </td>
+
+                            @if ( User.IsInRole(SD.ADMIN_ROLE) || User.IsInRole(SD.SUPER_ADMIN_ROLE))
+                            {
+                                <td>
+                                    <a href="/Admin/Movie/Edit/@item.Id" class="btn btn-sm btn-warning btn-edit"><i class="fa-solid fa-pen"></i></a>
+                                    <a href="/Admin/Movie/Delete/@item.Id" class="btn btn-sm btn-danger btn-delete"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <a href="/Admin/Movie/Details/@item.Id" class="btn btn-info btn-sm" title="View Details"><i class="fa-solid fa-eye"></i></a>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>

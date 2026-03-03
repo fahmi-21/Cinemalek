@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace Cinemalek.Areas.Admin.Controllers
 {
     [Area(SD.ADMIN_AREA)]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.EMPLOYEE_ROLE},{SD.ADMIN_ROLE}")]
     public class CategoryController : Controller
     {
         private IRepository<Category> repository;
@@ -45,14 +46,15 @@ namespace Cinemalek.Areas.Admin.Controllers
             });
         }
 
-
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public IActionResult Create()
         {
 
             return View(new Category());
         }
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Create(Category category)
         {
             if( !ModelState.IsValid )
@@ -79,8 +81,8 @@ namespace Cinemalek.Areas.Admin.Controllers
             await repository.Commitasync();
             return RedirectToAction(nameof(Index));
         }
-
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edite([FromRoute] int id)
         {
 
@@ -91,6 +93,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             return View(category);
         }
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edite(Category category)
         {
             if (!ModelState.IsValid)
@@ -111,6 +114,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             await repository.Commitasync();
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var category = await repository.GetOneAsync(e => e.Id == id);

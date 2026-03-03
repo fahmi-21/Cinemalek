@@ -47,9 +47,14 @@ namespace Cinemalek.Repository
 
             return await categories.ToListAsync();
         }
-        public async Task<T?> GetOneAsync( Expression<Func<T, bool>>? expression ,bool tracked = true)
+        public async Task<T?> GetOneAsync( Expression<Func<T, bool>>? expression, Expression<Func<T, object>>[]? includes = null,
+            bool tracked = true)
         {
-            return (await GetAllAsync(expression: expression, tracked: tracked)) .FirstOrDefault();
+            return (await GetAllAsync(
+                expression: expression,
+                includes: includes,
+                tracked: tracked
+            )).FirstOrDefault();
         }
 
         public async Task<int> Commitasync()

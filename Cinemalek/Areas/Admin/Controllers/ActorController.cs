@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 namespace Cinemalek.Areas.Admin.Controllers
 {
     [Area(SD.ADMIN_AREA)]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.EMPLOYEE_ROLE},{SD.ADMIN_ROLE}")]
     public class ActorController : Controller
     {
         
         private IRepository<Actor> repository;
+
         public ActorController(IRepository<Actor> repository)
         {
             this.repository = repository;
@@ -38,13 +40,14 @@ namespace Cinemalek.Areas.Admin.Controllers
                 TotalPages = (int)totalpages
             });
         }
-
+        [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public IActionResult Create()
         {
             return View(new Actor());
         }
-
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Create(Actor actor, IFormFile Img)
         {
             if (Img is null || Img.Length == 0)
@@ -73,9 +76,8 @@ namespace Cinemalek.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
-
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Details(int id)
         {
             var actor = await repository.GetOneAsync(a => a.Id == id);
@@ -85,8 +87,8 @@ namespace Cinemalek.Areas.Admin.Controllers
 
             return View(actor);
         }
-
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task <IActionResult> Edit([FromRoute]int id)
         {
             var actor = await repository.GetOneAsync(a => a.Id == id);
@@ -96,8 +98,8 @@ namespace Cinemalek.Areas.Admin.Controllers
 
             return View(actor);
         }
-
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(Actor actor, IFormFile? file)
         {
            
@@ -118,7 +120,7 @@ namespace Cinemalek.Areas.Admin.Controllers
             await repository.Commitasync();
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task <IActionResult> Delete([FromRoute]int id)
         {
             var actor =await repository.GetOneAsync(a => a.Id == id);
